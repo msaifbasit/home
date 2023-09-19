@@ -75,6 +75,14 @@ const Navigation = React.forwardRef((props, ref) => {
           )}
           <NavLink
             className="nav-item lead"
+            href={"https://ieeexplore.ieee.org/document/10016825"}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Publications
+          </NavLink>
+          <NavLink
+            className="nav-item lead"
             href={about.resume}
             target="_blank"
             rel="noreferrer noopener"

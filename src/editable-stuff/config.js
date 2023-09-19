@@ -54,7 +54,7 @@ const about = {
   imageLink: require("../editable-stuff/saifbasit.png"),
   imageSize: 375,
   message:
-    "Hey there! I'm Muhammad Saif Basit, a 2022 graduate from the University of Management and Technology, Lahore, with a Bachelor's in Computer Science. I'm all about the tech world, with a passion for AI and Data Science. I'm the kind of person who can't resist the allure of the latest tech trends.",
+    "Hey there! I'm Muhammad Saif Basit, a 2022 graduate from the University of Management and Technology, Lahore, with a Bachelor's in Computer Science. I'm all about the tech world, with a passion for AI/ML, Data Science, Computer Vision and Natural Language Processing. I'm the kind of person who can't resist the allure of the latest tech trends.",
   resume: require("../editable-stuff/resume.pdf"),
 };
 
