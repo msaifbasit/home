@@ -21,7 +21,7 @@ const mainBody = {
     },
     {
       image: "fa-instagram",
-      url: "https://www.instagram.com/saifoholic/",
+      url: "https://www.instagram.com/saif.thinks/",
     },
     {
       image: "fa-linkedin",
@@ -29,7 +29,7 @@ const mainBody = {
     },
     {
       image: "fa-twitter",
-      url: "https://www.twitter.com/cake_rusk/",
+      url: "https://www.twitter.com/saif.thinks/",
     },
   ],
 };
@@ -54,7 +54,7 @@ const about = {
   imageLink: require("../editable-stuff/saifbasit.png"),
   imageSize: 375,
   message:
-    "Hello world! This is Muhammad Saif Basit, a 2022 graduate from the University of Management and Technology, Lahore, with a Bachelor's in Computer Science. I'm all about the tech world, with a passion for AI/ML, Data Science, Computer Vision and Natural Language Processing. Being a first author of a publication in ‘IEEE’, the world’s largest technical organization, showcases my commitment to advancing the field of AI. I'm the kind of person who can't resist the allure of the latest tech trends.",
+    "Hello world! This is Muhammad Saif Basit, a research-oriented AI Engineer and Data Scientist with years of diversified experience in AI, Machine Learning, Deep Learning, Computer Vision and Natural Language Processing, in Software and FMCG (supply-chain) industries. Being a first author of a publication in ‘IEEE’, the world’s largest technical organization, showcases my commitment to advancing the field of AI. I'm a data geeko who can't resist the allure of the latest tech trends.",
   resume: require("../editable-stuff/resume.pdf"),
 };
 
