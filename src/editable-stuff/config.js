@@ -126,7 +126,7 @@ const getInTouch = {
   show: true,
   heading: "Get In Touch",
   message:
-    "I'm currently looking for full-time AI, Machine Learning and Data Science opportunities! If you know such positions available, have any query, or just want to say hi, please feel free to email me at",
+    "Should you have AI, Machine Learning and Data Science opportunities, have any query, or just want to say hi, please feel free to email me at",
   email: "msaifbasit@gmail.com",
 };
 
