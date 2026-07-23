@@ -149,9 +149,7 @@ const CONFIG = {
   socials: [
     { icon: "github",    url: "https://github.com/msaifbasit" },
     { icon: "linkedin",  url: "https://www.linkedin.com/in/muhammad-saif-basit/" },
-    { icon: "twitter",   url: "https://www.twitter.com/cake_rusk/" },
-    { icon: "facebook",  url: "https://www.facebook.com/muhammad.s.basit" },
-    { icon: "instagram", url: "https://www.instagram.com/saifoholic/" },
+    { icon: "instagram", url: "https://www.instagram.com/saifmadesimple/" },
   ],
 
   /* ---------- Theme ----------
