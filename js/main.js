@@ -1,0 +1,249 @@
+/* ============================================================
+   main.js — renders all content from config.js into the page
+   and wires up interactions (typing, nav, reveals, tilt…).
+   You should rarely need to edit this file: content changes
+   belong in config.js.
+   ============================================================ */
+
+import CONFIG from "../config.js";
+
+const $ = (sel) => document.querySelector(sel);
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Inline SVG icon library ---------- */
+const SOCIAL_ICONS = {
+  github:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.15c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>',
+  linkedin:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.55V9h3.57v11.45Z"/></svg>',
+  twitter:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23Zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64Z"/></svg>',
+  facebook:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.09 24 18.1 24 12.07Z"/></svg>',
+  instagram:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.72 3.72 0 0 1-1.38-.9 3.72 3.72 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.9 5.9 0 0 0-2.13 1.38A5.9 5.9 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13a5.9 5.9 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7.85-10.4a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0Z"/></svg>',
+  email:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12.71 1.5 5.25V18a1.5 1.5 0 0 0 1.5 1.5h18a1.5 1.5 0 0 0 1.5-1.5V5.25L12 12.71ZM12 10.5 22.36 3.14A1.5 1.5 0 0 0 21 2.25H3a1.5 1.5 0 0 0-1.36.89L12 10.5Z"/></svg>',
+};
+
+const PROJECT_ICONS = {
+  chat:  '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5Z"/></svg>',
+  vision:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 9 9 9 9 0 0 0 9-9 9 9 0 0 0-9-9Z"/><circle cx="12" cy="12" r="3.5"/></svg>',
+  leaf:  '<svg viewBox="0 0 24 24"><path d="M6 21c0-9 4-15 14-17-1 10-6 15-14 17Z"/><path d="M6 21c2.5-5.5 6-9.5 11-12"/></svg>',
+  eye:   '<svg viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  film:  '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5"/></svg>',
+  cube:  '<svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>',
+  code:  '<svg viewBox="0 0 24 24"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>',
+};
+const EXT_ICON = '<svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>';
+
+/* ---------- Helpers ---------- */
+function socialLinks(container) {
+  const el = $(container);
+  el.innerHTML = CONFIG.socials
+    .map(
+      (s) =>
+        `<a href="${s.url}" target="_blank" rel="noopener" aria-label="${s.icon}">${SOCIAL_ICONS[s.icon] || SOCIAL_ICONS.email}</a>`
+    )
+    .join("");
+}
+
+/* ---------- Render everything from CONFIG ---------- */
+function render() {
+  const { identity, about, skills, projects, contact } = CONFIG;
+
+  // Theme accents
+  document.documentElement.style.setProperty("--accent", CONFIG.theme.accent);
+  document.documentElement.style.setProperty("--accent-2", CONFIG.theme.accent2);
+
+  // Identity
+  const fullName = [identity.firstName, identity.middleName, identity.lastName]
+    .filter(Boolean)
+    .join(" ");
+  document.title = `${fullName} — ${identity.roles[0]}`;
+  $("#hero-name").textContent = fullName;
+  $("#hero-tagline").textContent = identity.tagline;
+  $("#about-img").src = identity.photo;
+  $("#about-img").alt = `Portrait of ${fullName}`;
+
+  // Resume buttons (hidden when no URL is set)
+  for (const id of ["#nav-resume", "#hero-resume"]) {
+    const btn = $(id);
+    if (CONFIG.resumeUrl) btn.href = CONFIG.resumeUrl;
+    else btn.style.display = "none";
+  }
+
+  // About
+  $("#about-heading").textContent = about.heading;
+  $("#about-paragraphs").innerHTML = about.paragraphs.map((p) => `<p>${p}</p>`).join("");
+  $("#about-stats").innerHTML = about.stats
+    .map(
+      (s) => `<div class="stat-card reveal">
+        <div class="stat-value">${s.value}</div>
+        <div class="stat-label">${s.label}</div>
+      </div>`
+    )
+    .join("");
+
+  // Skills
+  $("#skills-heading").textContent = skills.heading;
+  $("#skill-bars").innerHTML = skills.hard
+    .map(
+      (s) => `<div class="skill-bar">
+        <div class="skill-bar-head"><span>${s.name}</span><span class="pct">${s.value}%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" data-value="${s.value}"></div></div>
+      </div>`
+    )
+    .join("");
+  $("#skill-stack").innerHTML = skills.stack
+    .map(
+      (g) => `<div class="stack-group">
+        <h4>${g.group}</h4>
+        <div class="chips">${g.items.map((i) => `<span class="chip">${i}</span>`).join("")}</div>
+      </div>`
+    )
+    .join("");
+  $("#soft-skills").innerHTML = skills.soft.map((s) => `<span class="chip">${s}</span>`).join("");
+
+  // Projects
+  $("#projects-heading").textContent = projects.heading;
+  $("#projects-grid").innerHTML = projects.items
+    .map(
+      (p) => `<a class="project-card reveal tilt-card" href="${p.link}" target="_blank" rel="noopener">
+        <div class="project-top">
+          <div class="project-icon">${PROJECT_ICONS[p.icon] || PROJECT_ICONS.code}</div>
+          <div class="project-ext">${EXT_ICON}</div>
+        </div>
+        <h3 class="project-title">${p.title}</h3>
+        <p class="project-desc">${p.description}</p>
+        <div class="project-tags">${p.tags.map((t) => `<span>${t}</span>`).join("")}</div>
+      </a>`
+    )
+    .join("");
+
+  // Contact
+  $("#contact-heading").textContent = contact.heading;
+  $("#contact-blurb").textContent = contact.blurb;
+  $("#contact-email").href = `mailto:${contact.email}`;
+  $("#contact-location").textContent = `// based in ${identity.location}`;
+
+  // Socials + footer
+  socialLinks("#hero-socials");
+  socialLinks("#contact-socials");
+  $("#footer-text").innerHTML =
+    `Designed & built by <a href="${CONFIG.socials[0]?.url || "#"}" target="_blank" rel="noopener">${identity.shortName}</a> · ${new Date().getFullYear()}`;
+}
+
+/* ---------- Typing animation ---------- */
+function initTyping() {
+  const el = $("#typed");
+  const roles = CONFIG.identity.roles;
+  if (prefersReducedMotion) {
+    el.textContent = roles[0];
+    return;
+  }
+  let roleIdx = 0, charIdx = 0, deleting = false;
+  (function tick() {
+    const word = roles[roleIdx % roles.length];
+    charIdx += deleting ? -1 : 1;
+    el.textContent = word.slice(0, charIdx);
+    let delay = deleting ? 40 : 75;
+    if (!deleting && charIdx === word.length) { delay = 1800; deleting = true; }
+    else if (deleting && charIdx === 0) { deleting = false; roleIdx++; delay = 350; }
+    setTimeout(tick, delay);
+  })();
+}
+
+/* ---------- Navbar behaviour ---------- */
+function initNav() {
+  const navbar = $("#navbar");
+  const toggle = $("#nav-toggle");
+  const links = $("#nav-links");
+
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 30);
+  }, { passive: true });
+
+  toggle.addEventListener("click", () => {
+    const open = links.classList.toggle("open");
+    toggle.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+  });
+  links.querySelectorAll("a").forEach((a) =>
+    a.addEventListener("click", () => {
+      links.classList.remove("open");
+      toggle.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    })
+  );
+
+  // Scroll-spy: highlight the nav link of the section in view
+  const sections = document.querySelectorAll("main section[id]");
+  const navById = {};
+  document.querySelectorAll(".nav-link[href^='#']").forEach((a) => {
+    navById[a.getAttribute("href").slice(1)] = a;
+  });
+  const spy = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        document.querySelectorAll(".nav-link.active").forEach((el) => el.classList.remove("active"));
+        navById[e.target.id]?.classList.add("active");
+      }),
+    { rootMargin: "-45% 0px -50% 0px" }
+  );
+  sections.forEach((s) => spy.observe(s));
+}
+
+/* ---------- Reveal-on-scroll + skill bar animation ---------- */
+function initReveals() {
+  const obs = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("visible");
+        e.target.querySelectorAll?.(".skill-bar-fill").forEach((f) => {
+          f.style.width = `${f.dataset.value}%`;
+        });
+        obs.unobserve(e.target);
+      }),
+    { threshold: 0.12 }
+  );
+  document.querySelectorAll(".reveal, #skill-bars").forEach((el) => obs.observe(el));
+}
+
+/* ---------- 3D tilt on cards (desktop pointers only) ---------- */
+function initTilt() {
+  if (prefersReducedMotion || !window.matchMedia("(hover: hover)").matches) return;
+  document.querySelectorAll(".tilt-card").forEach((card) => {
+    card.addEventListener("mousemove", (ev) => {
+      const r = card.getBoundingClientRect();
+      const rx = ((ev.clientY - r.top) / r.height - 0.5) * -8;
+      const ry = ((ev.clientX - r.left) / r.width - 0.5) * 8;
+      card.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+    });
+    card.addEventListener("mouseleave", () => (card.style.transform = ""));
+  });
+}
+
+/* ---------- Boot ---------- */
+const hidePreloader = () => document.querySelector("#preloader").classList.add("done");
+window.addEventListener("load", hidePreloader);
+// Safety net: never keep the preloader up longer than 2.5 s
+setTimeout(hidePreloader, 2500);
+
+render();
+initTyping();
+initNav();
+initReveals();
+initTilt();
+if (CONFIG.scene.enabled && !prefersReducedMotion) {
+  // Loaded dynamically so the site stays fully usable even if
+  // WebGL or the Three.js module is unavailable.
+  import("./three-scene.js")
+    .then(({ initScene }) => initScene(document.querySelector("#bg-canvas"), CONFIG))
+    .catch((err) => {
+      console.warn("3D scene disabled:", err);
+      document.querySelector("#bg-canvas").style.display = "none";
+    });
+}
