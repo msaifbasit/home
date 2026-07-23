@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Muhammad Saif Basit — AI Engineer &amp; Data Scientist</title>
+  <meta name="description" content="Portfolio of Muhammad Saif Basit — AI Engineer and Data Scientist specialising in Machine Learning, NLP and Computer Vision. First-author IEEE publication." />
+  <meta property="og:title" content="Muhammad Saif Basit — AI Engineer & Data Scientist" />
+  <meta property="og:description" content="Interactive 3D portfolio: AI/ML, Data Science, NLP and Computer Vision projects." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/profile.png" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+
+  <script type="importmap">
+    { "imports": { "three": "./js/vendor/three.module.min.js" } }
+  </script>
+</head>
+<body>
+
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true"><span class="loader-ring"></span></div>
+
+  <!-- 3D background canvas -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <!-- Navbar -->
+  <header class="navbar" id="navbar">
+    <nav class="nav-inner container">
+      <a href="#home" class="nav-logo" id="nav-logo">&lt;SB /&gt;</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#home"     class="nav-link">Home</a></li>
+        <li><a href="#about"    class="nav-link">About</a></li>
+        <li><a href="#skills"   class="nav-link">Skills</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#contact"  class="nav-link">Contact</a></li>
+        <li><a href="#" id="nav-resume" class="nav-link nav-resume" target="_blank" rel="noopener">Resume</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="home" class="hero">
+      <div class="container hero-inner">
+        <p class="hero-hello mono reveal">Hi, my name is</p>
+        <h1 class="hero-name reveal" id="hero-name">Muhammad Saif Basit</h1>
+        <h2 class="hero-role reveal"><span class="mono">&gt;</span> <span id="typed"></span><span class="type-caret">|</span></h2>
+        <p class="hero-tagline reveal" id="hero-tagline"></p>
+        <div class="hero-cta reveal">
+          <a href="#projects" class="btn btn-solid">View Projects</a>
+          <a href="#" id="hero-resume" class="btn btn-ghost" target="_blank" rel="noopener">Resume</a>
+        </div>
+        <div class="socials reveal" id="hero-socials"></div>
+      </div>
+      <a href="#about" class="scroll-hint" aria-label="Scroll down"><span></span></a>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about" class="section">
+      <div class="container">
+        <h2 class="section-title reveal"><span class="mono section-index">01.</span> <span id="about-heading">About Me</span></h2>
+        <div class="about-grid">
+          <div class="about-photo reveal tilt-card">
+            <div class="photo-frame">
+              <img id="about-img" src="assets/profile.png" alt="Portrait of Muhammad Saif Basit" loading="lazy" />
+            </div>
+          </div>
+          <div class="about-text reveal" id="about-paragraphs"></div>
+        </div>
+        <div class="stats-grid" id="about-stats"></div>
+      </div>
+    </section>
+
+    <!-- ============ SKILLS ============ -->
+    <section id="skills" class="section">
+      <div class="container">
+        <h2 class="section-title reveal"><span class="mono section-index">02.</span> <span id="skills-heading">Skills</span></h2>
+        <div class="skills-grid">
+          <div class="skill-bars reveal" id="skill-bars"></div>
+          <div class="skill-stack reveal" id="skill-stack"></div>
+        </div>
+        <div class="soft-skills reveal" id="soft-skills"></div>
+      </div>
+    </section>
+
+    <!-- ============ PROJECTS ============ -->
+    <section id="projects" class="section">
+      <div class="container">
+        <h2 class="section-title reveal"><span class="mono section-index">03.</span> <span id="projects-heading">Projects</span></h2>
+        <div class="projects-grid" id="projects-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section id="contact" class="section">
+      <div class="container contact-inner">
+        <h2 class="section-title centered reveal"><span class="mono section-index">04.</span> <span id="contact-heading">Get In Touch</span></h2>
+        <p class="contact-blurb reveal" id="contact-blurb"></p>
+        <a href="#" class="btn btn-solid btn-lg reveal" id="contact-email">Say Hello</a>
+        <div class="socials reveal" id="contact-socials"></div>
+        <p class="contact-location mono reveal" id="contact-location"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="mono" id="footer-text"></p>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
