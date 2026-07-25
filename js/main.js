@@ -126,12 +126,81 @@ function render() {
   $("#contact-blurb").textContent = contact.blurb;
   $("#contact-email").href = `mailto:${contact.email}`;
   $("#contact-location").textContent = `// based in ${identity.location}`;
+  initEmailChooser(contact.email);
 
   // Socials + footer
   socialLinks("#hero-socials");
   socialLinks("#contact-socials");
   $("#footer-text").innerHTML =
     `Designed & built by <a href="${CONFIG.socials[0]?.url || "#"}" target="_blank" rel="noopener">${identity.shortName}</a> · ${new Date().getFullYear()}`;
+}
+
+/* ---------- Email chooser ----------
+   mailto: links silently do nothing when no desktop mail app is
+   configured, so "Say Hello" opens a chooser instead: email app,
+   Gmail in the browser, or copy the address. */
+function initEmailChooser(email) {
+  const modal = document.createElement("div");
+  modal.className = "email-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-label", "Choose how to send an email");
+  modal.innerHTML = `
+    <div class="email-card">
+      <button class="email-close" aria-label="Close">&#10005;</button>
+      <h3>Say Hello &#128075;</h3>
+      <p class="email-addr">${email}</p>
+      <div class="email-opts">
+        <a class="email-opt" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}" target="_blank" rel="noopener">
+          <span class="opt-ic">&#127760;</span> Open Gmail in browser
+        </a>
+        <a class="email-opt" href="mailto:${email}">
+          <span class="opt-ic">&#128231;</span> Open my email app
+        </a>
+        <button class="email-opt" data-copy>
+          <span class="opt-ic">&#128203;</span> <span data-copy-label>Copy email address</span>
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const open = () => modal.classList.add("open");
+  const close = () => modal.classList.remove("open");
+
+  $("#contact-email").addEventListener("click", (e) => {
+    e.preventDefault();
+    open();
+  });
+  modal.querySelector(".email-close").addEventListener("click", close);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+  modal.querySelectorAll("a.email-opt").forEach((a) => a.addEventListener("click", close));
+
+  const copyBtn = modal.querySelector("[data-copy]");
+  const copyLabel = modal.querySelector("[data-copy-label]");
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      copyLabel.textContent = "Copied!";
+    } catch {
+      // Clipboard API can be unavailable (http, old browsers)
+      const tmp = document.createElement("textarea");
+      tmp.value = email;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      tmp.remove();
+      copyLabel.textContent = "Copied!";
+    }
+    setTimeout(() => {
+      copyLabel.textContent = "Copy email address";
+      close();
+    }, 900);
+  });
 }
 
 /* ---------- Typing animation ---------- */
