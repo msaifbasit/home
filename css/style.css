@@ -469,6 +469,66 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 #contact-email { margin-bottom: 2.2rem; }
 .contact-location { margin-top: 2rem; color: var(--text-dim); font-size: 0.88rem; }
 
+/* ---------- Email chooser modal ---------- */
+.email-modal {
+  position: fixed; inset: 0; z-index: 80;
+  display: grid; place-items: center;
+  padding: 1rem;
+  background: rgba(6, 9, 18, 0.72);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.email-modal.open { opacity: 1; visibility: visible; }
+.email-card {
+  position: relative;
+  width: min(380px, 94vw);
+  background: #101527;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.9rem 1.6rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.25s ease;
+}
+.email-modal.open .email-card { transform: none; }
+.email-card h3 { font-size: 1.25rem; margin-bottom: 0.35rem; }
+.email-card .email-addr {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin-bottom: 1.4rem;
+  word-break: break-all;
+}
+.email-opts { display: flex; flex-direction: column; gap: 0.7rem; }
+.email-opt {
+  display: flex; align-items: center; gap: 0.85rem;
+  width: 100%;
+  padding: 0.85rem 1.05rem;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  font: inherit; font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.email-opt:hover { border-color: var(--accent); transform: translateY(-2px); }
+.email-opt .opt-ic { font-size: 1.15rem; line-height: 1; }
+.email-close {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  background: none; border: none;
+  color: var(--text-dim);
+  font-size: 1.15rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.email-close:hover { color: var(--text); background: var(--card); }
+
 /* ---------- Footer ---------- */
 .footer {
   padding: 2rem 0 2.4rem;
@@ -510,6 +570,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   .nav-link { font-size: 1.15rem; }
   .hero-cta { flex-direction: column; align-items: center; width: 100%; }
   .hero-cta .btn { width: min(230px, 72%); text-align: center; }
+  .hero .socials { justify-content: center; width: 100%; }
 }
 
 /* ---------- Reduced motion ---------- */

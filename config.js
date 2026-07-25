@@ -24,7 +24,9 @@ const CONFIG = {
       "IEEE Published Researcher",
     ],
     tagline: "Passionate about changing the world with technology.",
-    photo: "assets/profile.png",
+    // Bump the ?v= number whenever you replace the photo file so
+    // visitors' browsers fetch the new one instead of a cached copy
+    photo: "assets/profile.png?v=2",
   },
 
   /* ---------- Resume ----------
