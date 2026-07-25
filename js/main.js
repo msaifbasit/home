@@ -238,12 +238,27 @@ initNav();
 initReveals();
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
-  // Loaded dynamically so the site stays fully usable even if
-  // WebGL or the Three.js module is unavailable.
-  import("./three-scene.js")
-    .then(({ initScene }) => initScene(document.querySelector("#bg-canvas"), CONFIG))
-    .catch((err) => {
-      console.warn("3D scene disabled:", err);
-      document.querySelector("#bg-canvas").style.display = "none";
-    });
+  // The Three.js parse + WebGL setup is heavy enough to freeze the
+  // typing animation on mobile if run at boot, so start it only after
+  // the page has fully loaded and the browser is idle. The canvas
+  // fades in (css .on class) once the scene is running. Loaded
+  // dynamically so the site stays fully usable even if WebGL or the
+  // Three.js module is unavailable.
+  const startScene = () =>
+    import("./three-scene.js")
+      .then(({ initScene }) => {
+        const canvas = document.querySelector("#bg-canvas");
+        initScene(canvas, CONFIG);
+        canvas.classList.add("on");
+      })
+      .catch((err) => {
+        console.warn("3D scene disabled:", err);
+        document.querySelector("#bg-canvas").style.display = "none";
+      });
+  const whenIdle = () =>
+    "requestIdleCallback" in window
+      ? requestIdleCallback(startScene, { timeout: 2500 })
+      : setTimeout(startScene, 400);
+  if (document.readyState === "complete") whenIdle();
+  else window.addEventListener("load", whenIdle, { once: true });
 }
