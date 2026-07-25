@@ -74,21 +74,33 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   position: fixed; inset: 0;
   z-index: -1;
   display: block;
+  opacity: 0;
+  transition: opacity 1.2s ease;
 }
+#bg-canvas.on { opacity: 1; }
 
 /* ---------- Navbar ---------- */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 50;
   height: var(--nav-h);
-  transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
-.navbar.scrolled {
+/* The glass blur lives on a pseudo-element: backdrop-filter on the
+   navbar itself would turn it into the containing block for the
+   fixed-position mobile menu and break its placement when scrolled. */
+.navbar::before {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: -1;
   background: rgba(10, 14, 26, 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+.navbar.scrolled { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35); }
+.navbar.scrolled::before { opacity: 1; }
 .nav-inner {
   height: 100%;
   display: flex; align-items: center; justify-content: space-between;
@@ -473,12 +485,11 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 @media (max-width: 720px) {
   .nav-toggle { display: flex; }
   .nav-links {
-    position: fixed; inset: 0 0 0 32%;
+    position: fixed; top: 0; right: 0; bottom: 0; left: 32%;
+    height: 100dvh;
     flex-direction: column; justify-content: center;
     gap: 2.2rem;
-    background: rgba(13, 18, 34, 0.97);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #0d1222;
     transform: translateX(110%);
     transition: transform 0.35s ease;
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
