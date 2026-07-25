@@ -143,7 +143,7 @@ const CONFIG = {
     heading: "Get In Touch",
     blurb:
       "Whether you have an idea to discuss, a role to fill, or just want to talk AI — my inbox is always open.",
-    email: "saifbasit64@gmail.com",
+    email: "msaifbasit@gmail.com",
   },
 
   /* ---------- Social links ----------
