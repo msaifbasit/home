@@ -330,13 +330,12 @@ initNav();
 initReveals();
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
-  // The Three.js parse + WebGL setup is heavy enough to freeze page
-  // animations for a couple of seconds on phones, so the scene runs
-  // inside a Web Worker on an OffscreenCanvas whenever the browser
-  // supports it — completely off the main thread. Older browsers fall
-  // back to a deferred main-thread load. Either way the canvas fades
-  // in (css .on class) once the scene is running, and the site stays
-  // fully usable if WebGL is unavailable.
+  // The scene is a ~10KB dependency-free WebGL module (js/bg-scene.js),
+  // so there is nothing heavy to parse. It still runs inside a Web
+  // Worker on an OffscreenCanvas where supported so rendering never
+  // touches the main thread; older browsers fall back to a deferred
+  // main-thread load. Either way the canvas fades in (css .on class)
+  // once running, and the site stays fully usable without WebGL.
   const canvas = document.querySelector("#bg-canvas");
   const sceneParams = () => ({
     width: window.innerWidth,
@@ -386,7 +385,7 @@ if (CONFIG.scene.enabled && !prefersReducedMotion) {
   };
 
   const startOnMainThread = () =>
-    import("./three-scene.js")
+    import("./bg-scene.js")
       .then(({ initScene }) => {
         const api = initScene(canvas, sceneParams());
         canvas.classList.add("on");
@@ -414,16 +413,9 @@ if (CONFIG.scene.enabled && !prefersReducedMotion) {
       startOnMainThread();
     }
   };
-  const whenIdle = () => {
-    // On phones, wait out the first typed word so the engine compile
-    // (which competes for CPU cores even from the worker) lands in the
-    // hold pause instead of mid-typing.
-    const settleDelay = window.matchMedia("(max-width: 720px)").matches ? 1600 : 0;
-    setTimeout(() => {
-      if ("requestIdleCallback" in window) requestIdleCallback(start, { timeout: 2000 });
-      else setTimeout(start, 300);
-    }, settleDelay);
-  };
-  if (document.readyState === "complete") whenIdle();
-  else window.addEventListener("load", whenIdle, { once: true });
+  // The scene is light enough to start immediately after first paint —
+  // no need to wait for the load event (a slow font or image would
+  // only delay the background for nothing).
+  if ("requestIdleCallback" in window) requestIdleCallback(start, { timeout: 800 });
+  else setTimeout(start, 100);
 }
