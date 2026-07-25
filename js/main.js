@@ -238,8 +238,21 @@ function initTyping() {
     }
   }
 
+  // Long gaps (app switched away, screen off) are treated as paused
+  // time and skipped, so typing resumes where it left off instead of
+  // fast-forwarding. Short gaps (~boot stalls) still catch up.
+  let lastTick = performance.now();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      const now = performance.now();
+      phaseStart += now - lastTick;
+      lastTick = now;
+    }
+  });
   (function loop() {
     const now = performance.now();
+    if (now - lastTick > 3000) phaseStart += now - lastTick;
+    lastTick = now;
     // A few passes per tick let multiple phases catch up after a stall
     for (let i = 0; i < 8; i++) advance(now);
     setTimeout(loop, 35);
@@ -337,16 +350,24 @@ if (CONFIG.scene.enabled && !prefersReducedMotion) {
   // main-thread load. Either way the canvas fades in (css .on class)
   // once running, and the site stays fully usable without WebGL.
   const canvas = document.querySelector("#bg-canvas");
-  const sceneParams = () => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    pixelRatio: window.devicePixelRatio || 1,
-    isMobile: window.matchMedia("(max-width: 720px)").matches,
-    accent: CONFIG.theme.accent,
-    accent2: CONFIG.theme.accent2,
-    particleCount: CONFIG.scene.particleCount,
-    linkDistance: CONFIG.scene.linkDistance,
-  });
+  const sceneParams = () => {
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      pixelRatio: window.devicePixelRatio || 1,
+      isMobile,
+      accent: CONFIG.theme.accent,
+      accent2: CONFIG.theme.accent2,
+      particleCount: CONFIG.scene.particleCount,
+      linkDistance: CONFIG.scene.linkDistance,
+      // Strong mouse parallax on desktop; the original gentle values on
+      // phones, where "pointer" movement is really touch scrolling
+      parallax: isMobile
+        ? { x: 1.2, y: 0.8, ease: 0.04 }
+        : { x: 3.2, y: 2.2, ease: 0.06 },
+    };
+  };
 
   // Forward page input to the scene wherever it lives
   const wireEvents = (send) => {

@@ -227,9 +227,10 @@ export function initScene(canvas, p) {
   const LINK_DIST = p.linkDistance;
   const accent = hexToRgb(p.accent, [0.13, 0.83, 0.93]);
   const accent2 = hexToRgb(p.accent2, [0.65, 0.55, 0.98]);
-  // Native resolution (like the original renderer). Antialiasing comes
-  // from the shaders themselves, so no MSAA/supersampling is needed.
-  const maxDpr = 3;
+  // Native resolution capped at 2x, exactly like the original renderer;
+  // antialiasing comes from the shaders, so no MSAA is needed and
+  // phones don't pay for a 3x framebuffer.
+  const maxDpr = 2;
 
   const gl = canvas.getContext("webgl", {
     alpha: true,
@@ -354,8 +355,9 @@ export function initScene(canvas, p) {
     }
 
     // camera: mouse parallax + gentle scroll dolly
-    cam.x += (mouse.x * 3.2 - cam.x) * 0.06;
-    cam.y += (-mouse.y * 2.2 - scrollY * 0.0012 - cam.y) * 0.06;
+    const par = p.parallax || { x: 3.2, y: 2.2, ease: 0.06 };
+    cam.x += (mouse.x * par.x - cam.x) * par.ease;
+    cam.y += (-mouse.y * par.y - scrollY * 0.0012 - cam.y) * par.ease;
     const viewProj = mat4Multiply(proj, mat4LookAt(cam.x, cam.y, 11, 0, 0, 0));
 
     gl.clear(gl.COLOR_BUFFER_BIT);
