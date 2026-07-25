@@ -5,6 +5,6 @@
       <stop offset="1" stop-color="#a78bfa"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#0a0e1a"/>
-  <text x="32" y="43" font-family="'JetBrains Mono', monospace" font-size="30" font-weight="700" text-anchor="middle" fill="url(#g)">SB</text>
+  <rect width="64" height="64" rx="10" fill="#0a0e1a"/>
+  <text x="32" y="42" font-family="'JetBrains Mono', 'Arial Black', monospace" font-size="27" font-weight="800" text-anchor="middle" textLength="56" lengthAdjust="spacingAndGlyphs" fill="url(#g)">MSB</text>
 </svg>
