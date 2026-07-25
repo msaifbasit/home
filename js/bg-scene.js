@@ -134,8 +134,11 @@ void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c);
   if (d > 0.5) discard;
-  // pow ≈ sRGB lift, matching how a Three.js pipeline would look
-  float a = pow(smoothstep(0.5, 0.32, d) * 0.9 * vFog, 0.4545);
+  // Tight edge falloff keeps the dots crisp; the pow (≈ sRGB lift,
+  // matching how a Three.js pipeline would look) applies only to the
+  // body brightness, not the edge, so points don't look blurry.
+  float edge = smoothstep(0.5, 0.44, d);
+  float a = pow(0.9 * vFog, 0.4545) * edge;
   gl_FragColor = vec4(vColor, a);
 }`;
 const LINE_VS = `
@@ -184,11 +187,13 @@ export function initScene(canvas, p) {
   const LINK_DIST = p.linkDistance;
   const accent = hexToRgb(p.accent, [0.13, 0.83, 0.93]);
   const accent2 = hexToRgb(p.accent2, [0.65, 0.55, 0.98]);
-  const maxDpr = p.isMobile ? 1.5 : 2;
+  // Full-quality rendering everywhere: the scene is cheap enough that
+  // phones no longer need a reduced pixel ratio or disabled AA
+  const maxDpr = 2;
 
   const gl = canvas.getContext("webgl", {
     alpha: true,
-    antialias: !p.isMobile,
+    antialias: true,
     premultipliedAlpha: false,
     powerPreference: "low-power",
   });
@@ -309,8 +314,8 @@ export function initScene(canvas, p) {
     }
 
     // camera: mouse parallax + gentle scroll dolly
-    cam.x += (mouse.x * 1.2 - cam.x) * 0.04;
-    cam.y += (-mouse.y * 0.8 - scrollY * 0.0012 - cam.y) * 0.04;
+    cam.x += (mouse.x * 3.2 - cam.x) * 0.06;
+    cam.y += (-mouse.y * 2.2 - scrollY * 0.0012 - cam.y) * 0.06;
     const viewProj = mat4Multiply(proj, mat4LookAt(cam.x, cam.y, 11, 0, 0, 0));
 
     gl.clear(gl.COLOR_BUFFER_BIT);
