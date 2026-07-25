@@ -1,12 +1,15 @@
 /* ============================================================
    bg-scene.js — animated 3D background, dependency-free WebGL
    A neural-network style particle field (nodes + links) with a
-   floating wireframe icosahedron. Hand-written WebGL (~10KB)
+   floating wireframe icosahedron. Hand-written WebGL (~14KB)
    instead of a 3D library, so there is nothing heavy to parse
    or compile — the scene boots instantly even on slow phones.
-   Runs on the main thread or inside a Web Worker with an
-   OffscreenCanvas; never references window/document. Tune
-   particle counts in config.js → scene.
+
+   Lines are drawn as screen-space ribbons with shader-based
+   antialiasing (browsers often ignore MSAA on OffscreenCanvas,
+   which would leave 1px GL lines pixelated). Runs on the main
+   thread or inside a Web Worker; never references
+   window/document. Tune particle counts in config.js → scene.
    ============================================================ */
 
 /* ---------- tiny mat4 helpers (column-major) ---------- */
@@ -47,7 +50,6 @@ function mat4Multiply(a, b) {
 }
 function mat4Model(rx, ry, px, py, pz) {
   const cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry);
-  // rotY * rotX with translation
   return [
     cy, 0, -sy, 0,
     sx * sy, cx, sx * cy, 0,
@@ -56,7 +58,7 @@ function mat4Model(rx, ry, px, py, pz) {
   ];
 }
 
-/* ---------- icosahedron wireframe geometry ---------- */
+/* ---------- icosahedron wireframe edge list ---------- */
 function icosahedronEdges(radius, detail) {
   const t = (1 + Math.sqrt(5)) / 2;
   const verts = [
@@ -99,10 +101,34 @@ function icosahedronEdges(radius, detail) {
       const key = i < j ? `${i}_${j}` : `${j}_${i}`;
       if (edgeSet.has(key)) continue;
       edgeSet.add(key);
-      out.push(...verts[i], ...verts[j]);
+      out.push([verts[i], verts[j]]);
     }
   }
-  return new Float32Array(out);
+  return out; // array of [[ax,ay,az],[bx,by,bz]]
+}
+
+/* ---------- ribbon-line vertex packing ----------
+   Each segment becomes 2 triangles (6 vertices). Every vertex
+   carries both endpoints plus (endpointSelector, side) so the
+   vertex shader can expand the segment sideways in screen space. */
+const FLOATS_PER_SEG = 6 * 8;
+function packSegment(arr, off, ax, ay, az, bx, by, bz) {
+  const quad = [
+    [0, -1], [0, 1], [1, 1],
+    [0, -1], [1, 1], [1, -1],
+  ];
+  for (let v = 0; v < 6; v++) {
+    const o = off + v * 8;
+    arr[o] = ax; arr[o + 1] = ay; arr[o + 2] = az;
+    arr[o + 3] = bx; arr[o + 4] = by; arr[o + 5] = bz;
+    arr[o + 6] = quad[v][0]; arr[o + 7] = quad[v][1];
+  }
+}
+function packEdgeList(edges) {
+  const arr = new Float32Array(edges.length * FLOATS_PER_SEG);
+  edges.forEach(([a, b], i) =>
+    packSegment(arr, i * FLOATS_PER_SEG, a[0], a[1], a[2], b[0], b[1], b[2]));
+  return arr;
 }
 
 /* ---------- hex colour → [r,g,b] 0..1 ---------- */
@@ -118,45 +144,59 @@ function hexToRgb(hex, fallback) {
 const POINT_VS = `
 attribute vec3 aPos; attribute vec3 aColor;
 uniform mat4 uMVP; uniform float uScale;
-varying vec3 vColor; varying float vFog;
+varying vec3 vColor; varying float vFog; varying float vSize;
 void main() {
   gl_Position = uMVP * vec4(aPos, 1.0);
   float d = max(gl_Position.w, 0.1);
-  gl_PointSize = clamp(uScale * 0.09 / d, 1.5, 14.0);
+  gl_PointSize = clamp(uScale * 0.09 / d, 2.0, 20.0);
+  vSize = gl_PointSize;
   vColor = aColor;
   float fd = 0.035 * d;
   vFog = exp(-fd * fd);
 }`;
 const POINT_FS = `
 precision mediump float;
-varying vec3 vColor; varying float vFog;
+varying vec3 vColor; varying float vFog; varying float vSize;
 void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c);
   if (d > 0.5) discard;
-  // Tight edge falloff keeps the dots crisp; the pow (≈ sRGB lift,
-  // matching how a Three.js pipeline would look) applies only to the
-  // body brightness, not the edge, so points don't look blurry.
-  float edge = smoothstep(0.5, 0.44, d);
+  // ~1.2px of feather regardless of dot size: smooth edge, not blurry.
+  // pow ≈ sRGB lift, matching how a Three.js pipeline would look.
+  float feather = clamp(1.2 / vSize, 0.03, 0.35);
+  float edge = smoothstep(0.5, 0.5 - feather, d);
   float a = pow(0.9 * vFog, 0.4545) * edge;
   gl_FragColor = vec4(vColor, a);
 }`;
-const LINE_VS = `
-attribute vec3 aPos;
-uniform mat4 uMVP;
-varying float vFog;
+const RIBBON_VS = `
+attribute vec3 aStart; attribute vec3 aEnd; attribute vec2 aParam;
+uniform mat4 uMVP; uniform vec2 uViewport; uniform float uHalfWidth;
+varying float vFog; varying float vSide;
 void main() {
-  gl_Position = uMVP * vec4(aPos, 1.0);
-  float fd = 0.035 * max(gl_Position.w, 0.1);
+  vec4 c0 = uMVP * vec4(aStart, 1.0);
+  vec4 c1 = uMVP * vec4(aEnd, 1.0);
+  vec4 cur = mix(c0, c1, aParam.x);
+  vec2 vp2 = uViewport * 0.5;
+  vec2 s0 = c0.xy / max(c0.w, 0.1) * vp2;
+  vec2 s1 = c1.xy / max(c1.w, 0.1) * vp2;
+  vec2 dir = s1 - s0;
+  float len = max(length(dir), 0.0001);
+  vec2 nrm = vec2(-dir.y, dir.x) / len;
+  cur.xy += nrm * aParam.y * uHalfWidth / vp2 * cur.w;
+  gl_Position = cur;
+  vSide = aParam.y;
+  float fd = 0.035 * max(cur.w, 0.1);
   vFog = exp(-fd * fd);
 }`;
-const LINE_FS = `
+const RIBBON_FS = `
 precision mediump float;
 uniform vec3 uColor; uniform float uOpacity;
-varying float vFog;
+varying float vFog; varying float vSide;
 void main() {
+  // solid core with a soft antialiased edge across the ribbon width
+  float edge = 1.0 - smoothstep(0.45, 1.0, abs(vSide));
   // pow ≈ sRGB lift, matching how a Three.js pipeline would look
-  gl_FragColor = vec4(uColor, pow(uOpacity * vFog, 0.4545));
+  gl_FragColor = vec4(uColor, pow(uOpacity * vFog, 0.4545) * edge);
 }`;
 
 function buildProgram(gl, vsSrc, fsSrc) {
@@ -187,9 +227,9 @@ export function initScene(canvas, p) {
   const LINK_DIST = p.linkDistance;
   const accent = hexToRgb(p.accent, [0.13, 0.83, 0.93]);
   const accent2 = hexToRgb(p.accent2, [0.65, 0.55, 0.98]);
-  // Full-quality rendering everywhere: the scene is cheap enough that
-  // phones no longer need a reduced pixel ratio or disabled AA
-  const maxDpr = 2;
+  // Native resolution (like the original renderer). Antialiasing comes
+  // from the shaders themselves, so no MSAA/supersampling is needed.
+  const maxDpr = 3;
 
   const gl = canvas.getContext("webgl", {
     alpha: true,
@@ -209,16 +249,20 @@ export function initScene(canvas, p) {
   gl.clearColor(0, 0, 0, 0);
 
   const pointProg = buildProgram(gl, POINT_VS, POINT_FS);
-  const lineProg = buildProgram(gl, LINE_VS, LINE_FS);
+  const ribbonProg = buildProgram(gl, RIBBON_VS, RIBBON_FS);
   const loc = {
     pPos: gl.getAttribLocation(pointProg, "aPos"),
     pColor: gl.getAttribLocation(pointProg, "aColor"),
     pMVP: gl.getUniformLocation(pointProg, "uMVP"),
     pScale: gl.getUniformLocation(pointProg, "uScale"),
-    lPos: gl.getAttribLocation(lineProg, "aPos"),
-    lMVP: gl.getUniformLocation(lineProg, "uMVP"),
-    lColor: gl.getUniformLocation(lineProg, "uColor"),
-    lOpacity: gl.getUniformLocation(lineProg, "uOpacity"),
+    rStart: gl.getAttribLocation(ribbonProg, "aStart"),
+    rEnd: gl.getAttribLocation(ribbonProg, "aEnd"),
+    rParam: gl.getAttribLocation(ribbonProg, "aParam"),
+    rMVP: gl.getUniformLocation(ribbonProg, "uMVP"),
+    rViewport: gl.getUniformLocation(ribbonProg, "uViewport"),
+    rHalfWidth: gl.getUniformLocation(ribbonProg, "uHalfWidth"),
+    rColor: gl.getUniformLocation(ribbonProg, "uColor"),
+    rOpacity: gl.getUniformLocation(ribbonProg, "uOpacity"),
   };
 
   /* ----- particle nodes ----- */
@@ -245,24 +289,24 @@ export function initScene(canvas, p) {
   gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
   gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
 
-  /* ----- links ----- */
+  /* ----- link ribbons (rebuilt every frame) ----- */
   const maxLinks = COUNT * 6;
-  const linkArr = new Float32Array(maxLinks * 6);
+  const linkArr = new Float32Array(maxLinks * FLOATS_PER_SEG);
   const linkBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, linkBuf);
   gl.bufferData(gl.ARRAY_BUFFER, linkArr.byteLength, gl.DYNAMIC_DRAW);
 
-  /* ----- icosahedra ----- */
+  /* ----- icosahedra ribbons (static geometry) ----- */
   const icoBaseY = p.isMobile ? 3.5 : 1.5;
   const icoX = p.isMobile ? 0 : 5.5;
-  const icoOuter = icosahedronEdges(2.4, 1);
-  const icoInner = icosahedronEdges(1.15, 0);
+  const icoOuterArr = packEdgeList(icosahedronEdges(2.4, 1));
+  const icoInnerArr = packEdgeList(icosahedronEdges(1.15, 0));
   const icoOuterBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, icoOuterBuf);
-  gl.bufferData(gl.ARRAY_BUFFER, icoOuter, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, icoOuterArr, gl.STATIC_DRAW);
   const icoInnerBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, icoInnerBuf);
-  gl.bufferData(gl.ARRAY_BUFFER, icoInner, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, icoInnerArr, gl.STATIC_DRAW);
 
   /* ----- state driven from outside ----- */
   const mouse = { x: 0, y: 0 };
@@ -292,7 +336,7 @@ export function initScene(canvas, p) {
       if (Math.abs(positions[i * 3 + 2]) > BOUNDS.z) velocities[i * 3 + 2] *= -1;
     }
 
-    // rebuild the links between close nodes
+    // rebuild the link ribbons between close nodes
     let linkCount = 0;
     const maxD2 = LINK_DIST * LINK_DIST;
     for (let i = 0; i < COUNT && linkCount < maxLinks; i++) {
@@ -301,13 +345,9 @@ export function initScene(canvas, p) {
         const dy = positions[i * 3 + 1] - positions[j * 3 + 1];
         const dz = positions[i * 3 + 2] - positions[j * 3 + 2];
         if (dx * dx + dy * dy + dz * dz < maxD2) {
-          const o = linkCount * 6;
-          linkArr[o]     = positions[i * 3];
-          linkArr[o + 1] = positions[i * 3 + 1];
-          linkArr[o + 2] = positions[i * 3 + 2];
-          linkArr[o + 3] = positions[j * 3];
-          linkArr[o + 4] = positions[j * 3 + 1];
-          linkArr[o + 5] = positions[j * 3 + 2];
+          packSegment(linkArr, linkCount * FLOATS_PER_SEG,
+            positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2],
+            positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]);
           linkCount++;
         }
       }
@@ -320,33 +360,39 @@ export function initScene(canvas, p) {
 
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    // Attribute enables are global GL state, so each draw enables
-    // exactly what it uses and disables it again — otherwise a stale
-    // enabled attribute with a too-small buffer makes the browser
-    // silently skip draw calls.
-    const drawLines = (buffer, vertCount, mvp, color, opacity, sub) => {
-      gl.uniformMatrix4fv(loc.lMVP, false, mvp);
-      gl.uniform3fv(loc.lColor, color);
-      gl.uniform1f(loc.lOpacity, opacity);
+    // ribbons (links + icosahedra)
+    gl.useProgram(ribbonProg);
+    gl.uniform2f(loc.rViewport, canvas.width, canvas.height);
+    gl.uniform1f(loc.rHalfWidth, 0.65 * dpr);
+    gl.enableVertexAttribArray(loc.rStart);
+    gl.enableVertexAttribArray(loc.rEnd);
+    gl.enableVertexAttribArray(loc.rParam);
+    const bindRibbon = (buffer) => {
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      if (sub) gl.bufferSubData(gl.ARRAY_BUFFER, 0, sub);
-      gl.vertexAttribPointer(loc.lPos, 3, gl.FLOAT, false, 0, 0);
-      gl.drawArrays(gl.LINES, 0, vertCount);
+      gl.vertexAttribPointer(loc.rStart, 3, gl.FLOAT, false, 32, 0);
+      gl.vertexAttribPointer(loc.rEnd, 3, gl.FLOAT, false, 32, 12);
+      gl.vertexAttribPointer(loc.rParam, 2, gl.FLOAT, false, 32, 24);
     };
-
-    // links + icosahedra (rotating, gently bobbing)
-    gl.useProgram(lineProg);
-    gl.enableVertexAttribArray(loc.lPos);
+    const drawRibbons = (buffer, segCount, mvp, color, opacity, sub) => {
+      gl.uniformMatrix4fv(loc.rMVP, false, mvp);
+      gl.uniform3fv(loc.rColor, color);
+      gl.uniform1f(loc.rOpacity, opacity);
+      bindRibbon(buffer);
+      if (sub) gl.bufferSubData(gl.ARRAY_BUFFER, 0, sub);
+      gl.drawArrays(gl.TRIANGLES, 0, segCount * 6);
+    };
     const icoY = icoBaseY + Math.sin(t * 0.6) * 0.35;
-    drawLines(linkBuf, linkCount * 2, viewProj, accent, 0.14,
-      linkArr.subarray(0, linkCount * 6));
-    drawLines(icoOuterBuf, icoOuter.length / 3,
+    drawRibbons(linkBuf, linkCount, viewProj, accent, 0.14,
+      linkArr.subarray(0, linkCount * FLOATS_PER_SEG));
+    drawRibbons(icoOuterBuf, icoOuterArr.length / FLOATS_PER_SEG,
       mat4Multiply(viewProj, mat4Model(t * 0.12, t * 0.18, icoX, icoY, -2)),
       accent2, 0.16);
-    drawLines(icoInnerBuf, icoInner.length / 3,
+    drawRibbons(icoInnerBuf, icoInnerArr.length / FLOATS_PER_SEG,
       mat4Multiply(viewProj, mat4Model(-t * 0.25, -t * 0.2, icoX, icoY, -2)),
       accent, 0.28);
-    gl.disableVertexAttribArray(loc.lPos);
+    gl.disableVertexAttribArray(loc.rStart);
+    gl.disableVertexAttribArray(loc.rEnd);
+    gl.disableVertexAttribArray(loc.rParam);
 
     // points
     gl.useProgram(pointProg);
