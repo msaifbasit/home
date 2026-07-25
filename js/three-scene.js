@@ -1,20 +1,24 @@
 /* ============================================================
-   three-scene.js — animated 3D background
-   A neural-network style particle field (nodes + links) with
-   a floating wireframe icosahedron, both reacting to the mouse
-   and to scrolling. Tune particle counts in config.js → scene.
+   three-scene.js — animated 3D background (environment-agnostic)
+   A neural-network style particle field (nodes + links) with a
+   floating wireframe icosahedron. Runs identically on the main
+   thread or inside a Web Worker with an OffscreenCanvas — so it
+   never references window/document. The caller feeds it sizes
+   and input through the returned API. Tune particle counts in
+   config.js → scene.
    ============================================================ */
 
-import * as THREE from "three";
+import * as THREE from "./vendor/three.module.min.js";
 
-export function initScene(canvas, CONFIG) {
-  const isMobile = window.matchMedia("(max-width: 720px)").matches;
-  const COUNT = isMobile
-    ? Math.floor(CONFIG.scene.particleCount * 0.55)
-    : CONFIG.scene.particleCount;
-  const LINK_DIST = CONFIG.scene.linkDistance;
-  const accent = new THREE.Color(CONFIG.theme.accent);
-  const accent2 = new THREE.Color(CONFIG.theme.accent2);
+export function initScene(canvas, p) {
+  // p: { width, height, pixelRatio, isMobile,
+  //      accent, accent2, particleCount, linkDistance }
+  const COUNT = p.isMobile
+    ? Math.floor(p.particleCount * 0.55)
+    : p.particleCount;
+  const LINK_DIST = p.linkDistance;
+  const accent = new THREE.Color(p.accent);
+  const accent2 = new THREE.Color(p.accent2);
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -22,15 +26,13 @@ export function initScene(canvas, CONFIG) {
     antialias: true,
     powerPreference: "low-power",
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(p.pixelRatio, 2));
+  renderer.setSize(p.width, p.height, false);
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x0a0e1a, 0.035);
 
-  const camera = new THREE.PerspectiveCamera(
-    60, window.innerWidth / window.innerHeight, 0.1, 100
-  );
+  const camera = new THREE.PerspectiveCamera(60, p.width / p.height, 0.1, 100);
   camera.position.z = 11;
 
   /* ----- Particle nodes ----- */
@@ -90,6 +92,7 @@ export function initScene(canvas, CONFIG) {
   scene.add(links);
 
   /* ----- Floating wireframe icosahedron ----- */
+  const icoBaseY = p.isMobile ? 3.5 : 1.5;
   const ico = new THREE.Mesh(
     new THREE.IcosahedronGeometry(2.4, 1),
     new THREE.MeshBasicMaterial({
@@ -99,7 +102,7 @@ export function initScene(canvas, CONFIG) {
       opacity: 0.16,
     })
   );
-  ico.position.set(isMobile ? 0 : 5.5, isMobile ? 3.5 : 1.5, -2);
+  ico.position.set(p.isMobile ? 0 : 5.5, icoBaseY, -2);
   scene.add(ico);
 
   const icoInner = new THREE.Mesh(
@@ -114,32 +117,15 @@ export function initScene(canvas, CONFIG) {
   icoInner.position.copy(ico.position);
   scene.add(icoInner);
 
-  /* ----- Interaction state ----- */
+  /* ----- State driven from outside ----- */
   const mouse = { x: 0, y: 0 };
-  window.addEventListener("pointermove", (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
-  }, { passive: true });
-
-  let scrollY = window.scrollY;
-  window.addEventListener("scroll", () => (scrollY = window.scrollY), { passive: true });
-
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+  let scrollY = 0;
+  let paused = false;
 
   /* ----- Animation loop ----- */
   const clock = new THREE.Clock();
-  let paused = false;
-  document.addEventListener("visibilitychange", () => {
-    paused = document.hidden;
-    if (!paused) clock.getDelta(); // avoid a big jump after returning
-  });
 
-  function animate() {
-    requestAnimationFrame(animate);
+  function frame() {
     if (paused) return;
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
@@ -184,7 +170,7 @@ export function initScene(canvas, CONFIG) {
     ico.rotation.y = t * 0.18;
     icoInner.rotation.x = -t * 0.25;
     icoInner.rotation.y = -t * 0.2;
-    ico.position.y = (isMobile ? 3.5 : 1.5) + Math.sin(t * 0.6) * 0.35;
+    ico.position.y = icoBaseY + Math.sin(t * 0.6) * 0.35;
     icoInner.position.y = ico.position.y;
 
     // Camera: mouse parallax + gentle scroll dolly
@@ -194,5 +180,22 @@ export function initScene(canvas, CONFIG) {
 
     renderer.render(scene, camera);
   }
-  animate();
+  // setAnimationLoop works on the main thread and in workers alike
+  renderer.setAnimationLoop(frame);
+
+  /* ----- API for the host (main thread or worker shell) ----- */
+  return {
+    pointer(x, y) { mouse.x = x; mouse.y = y; },
+    scroll(y) { scrollY = y; },
+    resize(width, height, pixelRatio) {
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(pixelRatio, 2));
+      renderer.setSize(width, height, false);
+    },
+    setPaused(hidden) {
+      paused = hidden;
+      if (!paused) clock.getDelta(); // avoid a big jump after returning
+    },
+  };
 }

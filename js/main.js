@@ -307,27 +307,94 @@ initNav();
 initReveals();
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
-  // The Three.js parse + WebGL setup is heavy enough to freeze the
-  // typing animation on mobile if run at boot, so start it only after
-  // the page has fully loaded and the browser is idle. The canvas
-  // fades in (css .on class) once the scene is running. Loaded
-  // dynamically so the site stays fully usable even if WebGL or the
-  // Three.js module is unavailable.
-  const startScene = () =>
+  // The Three.js parse + WebGL setup is heavy enough to freeze page
+  // animations for a couple of seconds on phones, so the scene runs
+  // inside a Web Worker on an OffscreenCanvas whenever the browser
+  // supports it — completely off the main thread. Older browsers fall
+  // back to a deferred main-thread load. Either way the canvas fades
+  // in (css .on class) once the scene is running, and the site stays
+  // fully usable if WebGL is unavailable.
+  const canvas = document.querySelector("#bg-canvas");
+  const sceneParams = () => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    pixelRatio: window.devicePixelRatio || 1,
+    isMobile: window.matchMedia("(max-width: 720px)").matches,
+    accent: CONFIG.theme.accent,
+    accent2: CONFIG.theme.accent2,
+    particleCount: CONFIG.scene.particleCount,
+    linkDistance: CONFIG.scene.linkDistance,
+  });
+
+  // Forward page input to the scene wherever it lives
+  const wireEvents = (send) => {
+    window.addEventListener("pointermove", (e) => {
+      send.pointer(
+        (e.clientX / window.innerWidth) * 2 - 1,
+        (e.clientY / window.innerHeight) * 2 - 1
+      );
+    }, { passive: true });
+    window.addEventListener("scroll", () => send.scroll(window.scrollY), { passive: true });
+    window.addEventListener("resize", () => {
+      send.resize(window.innerWidth, window.innerHeight, window.devicePixelRatio || 1);
+    });
+    document.addEventListener("visibilitychange", () => send.visibility(document.hidden));
+  };
+
+  const startInWorker = () => {
+    const offscreen = canvas.transferControlToOffscreen();
+    const worker = new Worker(new URL("./scene-worker.js", import.meta.url), { type: "module" });
+    worker.onmessage = (e) => {
+      if (e.data.type === "ready") canvas.classList.add("on");
+    };
+    worker.onerror = (err) => {
+      console.warn("3D scene worker failed:", err.message || err);
+      canvas.style.display = "none";
+      worker.terminate();
+    };
+    worker.postMessage({ type: "init", canvas: offscreen, params: sceneParams() }, [offscreen]);
+    wireEvents({
+      pointer: (x, y) => worker.postMessage({ type: "pointer", x, y }),
+      scroll: (y) => worker.postMessage({ type: "scroll", y }),
+      resize: (width, height, pixelRatio) =>
+        worker.postMessage({ type: "resize", width, height, pixelRatio }),
+      visibility: (hidden) => worker.postMessage({ type: "visibility", hidden }),
+    });
+  };
+
+  const startOnMainThread = () =>
     import("./three-scene.js")
       .then(({ initScene }) => {
-        const canvas = document.querySelector("#bg-canvas");
-        initScene(canvas, CONFIG);
+        const api = initScene(canvas, sceneParams());
         canvas.classList.add("on");
+        wireEvents({
+          pointer: api.pointer,
+          scroll: api.scroll,
+          resize: api.resize,
+          visibility: api.setPaused,
+        });
       })
       .catch((err) => {
         console.warn("3D scene disabled:", err);
-        document.querySelector("#bg-canvas").style.display = "none";
+        canvas.style.display = "none";
       });
+
+  const start = () => {
+    if (canvas.transferControlToOffscreen && window.Worker) {
+      try {
+        startInWorker();
+      } catch (err) {
+        console.warn("3D scene worker unavailable:", err);
+        canvas.style.display = "none";
+      }
+    } else {
+      startOnMainThread();
+    }
+  };
   const whenIdle = () =>
     "requestIdleCallback" in window
-      ? requestIdleCallback(startScene, { timeout: 2500 })
-      : setTimeout(startScene, 400);
+      ? requestIdleCallback(start, { timeout: 2000 })
+      : setTimeout(start, 300);
   if (document.readyState === "complete") whenIdle();
   else window.addEventListener("load", whenIdle, { once: true });
 }
