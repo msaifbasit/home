@@ -300,8 +300,10 @@ export function initScene(canvas, p) {
   /* ----- icosahedra ribbons (static geometry) ----- */
   const icoBaseY = p.isMobile ? 3.5 : 1.5;
   const icoX = p.isMobile ? 0 : 5.5;
-  const icoOuterArr = packEdgeList(icosahedronEdges(2.4, 1));
-  const icoInnerArr = packEdgeList(icosahedronEdges(1.15, 0));
+  // Larger on desktop where there's room next to the hero text
+  const icoScale = p.isMobile ? 1 : 1.35;
+  const icoOuterArr = packEdgeList(icosahedronEdges(2.4 * icoScale, 1));
+  const icoInnerArr = packEdgeList(icosahedronEdges(1.15 * icoScale, 0));
   const icoOuterBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, icoOuterBuf);
   gl.bufferData(gl.ARRAY_BUFFER, icoOuterArr, gl.STATIC_DRAW);
