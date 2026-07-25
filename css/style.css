@@ -300,18 +300,30 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 }
 .photo-frame {
   position: relative;
-  border-radius: var(--radius);
-  overflow: hidden;
-  border: 1px solid var(--card-border);
-  background: var(--card);
+  animation: floaty 5.5s ease-in-out infinite;
 }
-.photo-frame::after {
+/* soft pulsing glow behind the circular photo */
+.photo-frame::before {
   content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(160deg, rgba(34, 211, 238, 0.16), transparent 55%);
-  pointer-events: none;
+  position: absolute; inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(34, 211, 238, 0.4), rgba(167, 139, 250, 0.28) 55%, transparent 75%);
+  filter: blur(32px);
+  z-index: -1;
+  animation: glowpulse 5.5s ease-in-out infinite;
 }
-.photo-frame img { display: block; width: 100%; height: auto; }
+.photo-frame img {
+  display: block; width: 100%; height: auto;
+  border-radius: 50%;
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+@keyframes glowpulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
 .about-text p { color: var(--text-dim); margin-bottom: 1.1rem; font-size: 1.03rem; }
 .about-text p strong { color: var(--text); }
 
@@ -496,8 +508,8 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   }
   .nav-links.open { transform: translateX(0); }
   .nav-link { font-size: 1.15rem; }
-  .hero-cta .btn { width: 100%; text-align: center; }
-  .hero-cta { flex-direction: column; max-width: 320px; }
+  .hero-cta { flex-direction: column; align-items: center; width: 100%; }
+  .hero-cta .btn { width: min(230px, 72%); text-align: center; }
 }
 
 /* ---------- Reduced motion ---------- */
@@ -505,5 +517,6 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .type-caret, .scroll-hint span, .loader-ring { animation: none; }
+  .photo-frame, .photo-frame::before { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
