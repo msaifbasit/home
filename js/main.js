@@ -203,7 +203,11 @@ function initEmailChooser(email) {
   });
 }
 
-/* ---------- Typing animation ---------- */
+/* ---------- Typing animation ----------
+   Driven by wall-clock time rather than one setTimeout per character:
+   if the main thread stalls (e.g. heavy work elsewhere), the text
+   instantly catches up to where it should be instead of freezing
+   mid-word and resuming in slow motion. */
 function initTyping() {
   const el = $("#typed");
   const roles = CONFIG.identity.roles;
@@ -211,15 +215,34 @@ function initTyping() {
     el.textContent = roles[0];
     return;
   }
-  let roleIdx = 0, charIdx = 0, deleting = false;
-  (function tick() {
+  const TYPE = 75, DELETE = 40, HOLD = 1800, GAP = 350;
+  let roleIdx = 0;
+  let phase = "type";
+  let phaseStart = performance.now();
+
+  function advance(now) {
     const word = roles[roleIdx % roles.length];
-    charIdx += deleting ? -1 : 1;
-    el.textContent = word.slice(0, charIdx);
-    let delay = deleting ? 40 : 75;
-    if (!deleting && charIdx === word.length) { delay = 1800; deleting = true; }
-    else if (deleting && charIdx === 0) { deleting = false; roleIdx++; delay = 350; }
-    setTimeout(tick, delay);
+    const elapsed = now - phaseStart;
+    if (phase === "type") {
+      const chars = Math.min(word.length, Math.floor(elapsed / TYPE));
+      el.textContent = word.slice(0, chars);
+      if (chars >= word.length) { phase = "hold"; phaseStart += word.length * TYPE; }
+    } else if (phase === "hold") {
+      if (elapsed >= HOLD) { phase = "delete"; phaseStart += HOLD; }
+    } else if (phase === "delete") {
+      const remain = Math.max(0, word.length - Math.floor(elapsed / DELETE));
+      el.textContent = word.slice(0, remain);
+      if (remain === 0) { phase = "gap"; phaseStart += word.length * DELETE; }
+    } else {
+      if (elapsed >= GAP) { phase = "type"; phaseStart += GAP; roleIdx++; }
+    }
+  }
+
+  (function loop() {
+    const now = performance.now();
+    // A few passes per tick let multiple phases catch up after a stall
+    for (let i = 0; i < 8; i++) advance(now);
+    setTimeout(loop, 35);
   })();
 }
 
@@ -391,10 +414,16 @@ if (CONFIG.scene.enabled && !prefersReducedMotion) {
       startOnMainThread();
     }
   };
-  const whenIdle = () =>
-    "requestIdleCallback" in window
-      ? requestIdleCallback(start, { timeout: 2000 })
-      : setTimeout(start, 300);
+  const whenIdle = () => {
+    // On phones, wait out the first typed word so the engine compile
+    // (which competes for CPU cores even from the worker) lands in the
+    // hold pause instead of mid-typing.
+    const settleDelay = window.matchMedia("(max-width: 720px)").matches ? 1600 : 0;
+    setTimeout(() => {
+      if ("requestIdleCallback" in window) requestIdleCallback(start, { timeout: 2000 });
+      else setTimeout(start, 300);
+    }, settleDelay);
+  };
   if (document.readyState === "complete") whenIdle();
   else window.addEventListener("load", whenIdle, { once: true });
 }

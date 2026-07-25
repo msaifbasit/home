@@ -20,13 +20,15 @@ export function initScene(canvas, p) {
   const accent = new THREE.Color(p.accent);
   const accent2 = new THREE.Color(p.accent2);
 
+  // Lighter GPU/CPU settings on phones: no MSAA, lower resolution cap
+  const maxDpr = p.isMobile ? 1.5 : 2;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    antialias: true,
+    antialias: !p.isMobile,
     powerPreference: "low-power",
   });
-  renderer.setPixelRatio(Math.min(p.pixelRatio, 2));
+  renderer.setPixelRatio(Math.min(p.pixelRatio, maxDpr));
   renderer.setSize(p.width, p.height, false);
 
   const scene = new THREE.Scene();
@@ -190,7 +192,7 @@ export function initScene(canvas, p) {
     resize(width, height, pixelRatio) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(pixelRatio, 2));
+      renderer.setPixelRatio(Math.min(pixelRatio, maxDpr));
       renderer.setSize(width, height, false);
     },
     setPaused(hidden) {
