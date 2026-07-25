@@ -1,8 +1,8 @@
 # 🚀 3D Portfolio — Muhammad Saif Basit
 
 An interactive, single-page 3D portfolio built with vanilla HTML/CSS/JS and
-[Three.js](https://threejs.org/). No build step, no framework — edit one file
-and push to update the live site.
+a hand-written WebGL background (zero dependencies). No build step, no
+framework — edit one file and push to update the live site.
 
 **Live site:** https://msaifbasit.github.io/portfolio/
 
@@ -31,7 +31,8 @@ Common edits:
 ├── config.js             # ✏️ ALL content lives here
 ├── css/style.css         # theme, layout, animations
 ├── js/main.js            # renders config.js into the page + interactions
-├── js/three-scene.js     # Three.js neural-particle background
+├── js/bg-scene.js        # dependency-free WebGL particle background
+├── js/scene-worker.js    # runs the background in a Web Worker
 ├── assets/               # profile photo, favicon
 └── .github/workflows/    # auto-deploy to GitHub Pages
 ```
@@ -66,8 +67,9 @@ Source: GitHub Actions**, then re-run the workflow.
 
 ## 🧰 Tech
 
-- Three.js (via CDN import map) — particle network + wireframe icosahedron,
-  mouse parallax, scroll dolly
+- Hand-written WebGL (~10KB, zero dependencies) — particle network +
+  wireframe icosahedron, mouse parallax, scroll dolly; rendered in a
+  Web Worker on an OffscreenCanvas where supported
 - Vanilla JS — typing effect, scroll-spy navbar, reveal-on-scroll,
   3D tilt cards
 - Respects `prefers-reduced-motion`, responsive down to small phones
