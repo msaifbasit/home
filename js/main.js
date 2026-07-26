@@ -366,6 +366,8 @@ if (CONFIG.scene.enabled && !prefersReducedMotion) {
       parallax: isMobile
         ? { x: 1.2, y: 0.8, ease: 0.04 }
         : { x: 3.2, y: 2.2, ease: 0.06 },
+      // Cursor spotlight is a desktop-only effect (no hover on touch)
+      mouseGlow: isMobile ? 0 : CONFIG.scene.mouseGlow ?? 1,
     };
   };
 
