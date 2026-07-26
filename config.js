@@ -167,6 +167,9 @@ const CONFIG = {
     enabled: true,        // set false to disable the 3D canvas entirely
     particleCount: 130,   // desktop particle count (mobile auto-reduces)
     linkDistance: 2.6,    // max distance at which particles connect
+    // Brightness of the spotlight that follows the mouse on desktop.
+    // 0 turns it off, 1 is the default, 1.5+ is dramatic.
+    mouseGlow: 1,
   },
 };
 

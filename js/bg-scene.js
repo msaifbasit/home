@@ -141,37 +141,54 @@ function hexToRgb(hex, fallback) {
 }
 
 /* ---------- shaders ---------- */
+/* Shared cursor-spotlight helper: brightens whatever is near the
+   pointer. uGlowPos is the cursor in NDC, uAspect corrects the
+   distance so the halo stays circular on wide screens. */
+const GLOW_FS_HEAD = `
+uniform vec2 uGlowPos; uniform float uAspect; uniform float uGlowAmp;
+varying vec2 vNdc;
+float glowAt() {
+  float d = length((vNdc - uGlowPos) * vec2(uAspect, 1.0));
+  return uGlowAmp * smoothstep(0.62, 0.0, d);
+}`;
+
 const POINT_VS = `
 attribute vec3 aPos; attribute vec3 aColor;
 uniform mat4 uMVP; uniform float uScale;
 varying vec3 vColor; varying float vFog; varying float vSize;
+varying vec2 vNdc;
 void main() {
   gl_Position = uMVP * vec4(aPos, 1.0);
   float d = max(gl_Position.w, 0.1);
   gl_PointSize = clamp(uScale * 0.09 / d, 2.0, 20.0);
   vSize = gl_PointSize;
   vColor = aColor;
+  vNdc = gl_Position.xy / d;
   float fd = 0.035 * d;
   vFog = exp(-fd * fd);
 }`;
 const POINT_FS = `
 precision mediump float;
 varying vec3 vColor; varying float vFog; varying float vSize;
+${GLOW_FS_HEAD}
 void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c);
   if (d > 0.5) discard;
-  // ~1.2px of feather regardless of dot size: smooth edge, not blurry.
+  // Slim ~0.8px feather: just enough to smooth the circle's rim while
+  // keeping the dot solid and bright, like the original renderer.
   // pow ≈ sRGB lift, matching how a Three.js pipeline would look.
-  float feather = clamp(1.2 / vSize, 0.03, 0.35);
+  float feather = clamp(0.8 / vSize, 0.02, 0.22);
   float edge = smoothstep(0.5, 0.5 - feather, d);
-  float a = pow(0.9 * vFog, 0.4545) * edge;
-  gl_FragColor = vec4(vColor, a);
+  float g = glowAt();
+  float a = pow(vFog, 0.4545) * edge * (1.0 + 0.9 * g);
+  vec3 col = mix(vColor, min(vColor * 1.6 + 0.12, vec3(1.0)), g);
+  gl_FragColor = vec4(col, min(a, 1.0));
 }`;
 const RIBBON_VS = `
 attribute vec3 aStart; attribute vec3 aEnd; attribute vec2 aParam;
 uniform mat4 uMVP; uniform vec2 uViewport; uniform float uHalfWidth;
-varying float vFog; varying float vSide;
+varying float vFog; varying float vSide; varying vec2 vNdc;
 void main() {
   vec4 c0 = uMVP * vec4(aStart, 1.0);
   vec4 c1 = uMVP * vec4(aEnd, 1.0);
@@ -185,6 +202,7 @@ void main() {
   cur.xy += nrm * aParam.y * uHalfWidth / vp2 * cur.w;
   gl_Position = cur;
   vSide = aParam.y;
+  vNdc = cur.xy / max(cur.w, 0.1);
   float fd = 0.035 * max(cur.w, 0.1);
   vFog = exp(-fd * fd);
 }`;
@@ -192,11 +210,16 @@ const RIBBON_FS = `
 precision mediump float;
 uniform vec3 uColor; uniform float uOpacity;
 varying float vFog; varying float vSide;
+${GLOW_FS_HEAD}
 void main() {
-  // solid core with a soft antialiased edge across the ribbon width
-  float edge = 1.0 - smoothstep(0.45, 1.0, abs(vSide));
+  // mostly-solid core with a thin antialiased rim, so lines stay
+  // bright and defined instead of fading across their width
+  float edge = 1.0 - smoothstep(0.72, 1.0, abs(vSide));
+  float g = glowAt();
   // pow ≈ sRGB lift, matching how a Three.js pipeline would look
-  gl_FragColor = vec4(uColor, pow(uOpacity * vFog, 0.4545) * edge);
+  float a = pow(uOpacity * vFog, 0.4545) * edge * (1.0 + 1.8 * g);
+  vec3 col = mix(uColor, min(uColor * 1.35 + 0.06, vec3(1.0)), g);
+  gl_FragColor = vec4(col, min(a, 1.0));
 }`;
 
 function buildProgram(gl, vsSrc, fsSrc) {
@@ -256,6 +279,12 @@ export function initScene(canvas, p) {
     pColor: gl.getAttribLocation(pointProg, "aColor"),
     pMVP: gl.getUniformLocation(pointProg, "uMVP"),
     pScale: gl.getUniformLocation(pointProg, "uScale"),
+    pGlowPos: gl.getUniformLocation(pointProg, "uGlowPos"),
+    pAspect: gl.getUniformLocation(pointProg, "uAspect"),
+    pGlowAmp: gl.getUniformLocation(pointProg, "uGlowAmp"),
+    rGlowPos: gl.getUniformLocation(ribbonProg, "uGlowPos"),
+    rAspect: gl.getUniformLocation(ribbonProg, "uAspect"),
+    rGlowAmp: gl.getUniformLocation(ribbonProg, "uGlowAmp"),
     rStart: gl.getAttribLocation(ribbonProg, "aStart"),
     rEnd: gl.getAttribLocation(ribbonProg, "aEnd"),
     rParam: gl.getAttribLocation(ribbonProg, "aParam"),
@@ -316,6 +345,11 @@ export function initScene(canvas, p) {
   let scrollY = 0;
   let paused = false;
   const cam = { x: 0, y: 0 };
+  // Cursor spotlight: position eases toward the pointer and the
+  // strength fades in once the pointer has actually moved
+  const glowMax = p.mouseGlow == null ? 1 : p.mouseGlow;
+  const glow = { x: 0, y: 0, amp: 0 };
+  let pointerSeen = false;
   const t0 = performance.now();
   let lastT = t0;
 
@@ -362,12 +396,21 @@ export function initScene(canvas, p) {
     cam.y += (-mouse.y * par.y - scrollY * 0.0012 - cam.y) * par.ease;
     const viewProj = mat4Multiply(proj, mat4LookAt(cam.x, cam.y, 11, 0, 0, 0));
 
+    // cursor spotlight trails the pointer smoothly (NDC: y points up)
+    glow.x += (mouse.x - glow.x) * 0.09;
+    glow.y += (-mouse.y - glow.y) * 0.09;
+    glow.amp += ((pointerSeen ? glowMax : 0) - glow.amp) * 0.05;
+    const aspect = vw / vh;
+
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // ribbons (links + icosahedra)
     gl.useProgram(ribbonProg);
     gl.uniform2f(loc.rViewport, canvas.width, canvas.height);
-    gl.uniform1f(loc.rHalfWidth, 0.65 * dpr);
+    gl.uniform1f(loc.rHalfWidth, 0.75 * dpr);
+    gl.uniform2f(loc.rGlowPos, glow.x, glow.y);
+    gl.uniform1f(loc.rAspect, aspect);
+    gl.uniform1f(loc.rGlowAmp, glow.amp);
     gl.enableVertexAttribArray(loc.rStart);
     gl.enableVertexAttribArray(loc.rEnd);
     gl.enableVertexAttribArray(loc.rParam);
@@ -386,14 +429,14 @@ export function initScene(canvas, p) {
       gl.drawArrays(gl.TRIANGLES, 0, segCount * 6);
     };
     const icoY = icoBaseY + Math.sin(t * 0.6) * 0.35;
-    drawRibbons(linkBuf, linkCount, viewProj, accent, 0.14,
+    drawRibbons(linkBuf, linkCount, viewProj, accent, 0.2,
       linkArr.subarray(0, linkCount * FLOATS_PER_SEG));
     drawRibbons(icoOuterBuf, icoOuterArr.length / FLOATS_PER_SEG,
       mat4Multiply(viewProj, mat4Model(t * 0.12, t * 0.18, icoX, icoY, -2)),
-      accent2, 0.16);
+      accent2, 0.24);
     drawRibbons(icoInnerBuf, icoInnerArr.length / FLOATS_PER_SEG,
       mat4Multiply(viewProj, mat4Model(-t * 0.25, -t * 0.2, icoX, icoY, -2)),
-      accent, 0.28);
+      accent, 0.38);
     gl.disableVertexAttribArray(loc.rStart);
     gl.disableVertexAttribArray(loc.rEnd);
     gl.disableVertexAttribArray(loc.rParam);
@@ -402,6 +445,9 @@ export function initScene(canvas, p) {
     gl.useProgram(pointProg);
     gl.uniformMatrix4fv(loc.pMVP, false, viewProj);
     gl.uniform1f(loc.pScale, canvas.height / 2);
+    gl.uniform2f(loc.pGlowPos, glow.x, glow.y);
+    gl.uniform1f(loc.pAspect, aspect);
+    gl.uniform1f(loc.pGlowAmp, glow.amp);
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, positions);
     gl.enableVertexAttribArray(loc.pPos);
@@ -424,7 +470,10 @@ export function initScene(canvas, p) {
 
   /* ----- API for the host (main thread or worker shell) ----- */
   return {
-    pointer(x, y) { mouse.x = x; mouse.y = y; },
+    pointer(x, y) {
+      if (!pointerSeen) { glow.x = x; glow.y = -y; pointerSeen = true; }
+      mouse.x = x; mouse.y = y;
+    },
     scroll(y) { scrollY = y; },
     resize(width, height, pixelRatio) {
       vw = width; vh = height;
