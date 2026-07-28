@@ -4,7 +4,7 @@ An interactive, single-page 3D portfolio built with vanilla HTML/CSS/JS and
 a hand-written WebGL background (zero dependencies). No build step, no
 framework — edit one file and push to update the live site.
 
-**Live site:** https://msaifbasit.github.io/portfolio/
+**Live site:** https://msaifbasit.github.io/home/
 
 ## ✏️ How to customize (the only file you need)
 
