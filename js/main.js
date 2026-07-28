@@ -24,7 +24,27 @@ const SOCIAL_ICONS = {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.72 3.72 0 0 1-1.38-.9 3.72 3.72 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.9 5.9 0 0 0-2.13 1.38A5.9 5.9 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13a5.9 5.9 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7.85-10.4a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0Z"/></svg>',
   email:
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12.71 1.5 5.25V18a1.5 1.5 0 0 0 1.5 1.5h18a1.5 1.5 0 0 0 1.5-1.5V5.25L12 12.71ZM12 10.5 22.36 3.14A1.5 1.5 0 0 0 21 2.25H3a1.5 1.5 0 0 0-1.36.89L12 10.5Z"/></svg>',
+  scholar:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.242 13.769 0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269ZM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z"/></svg>',
+  medium:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 12a6.8 6.8 0 0 1 6.77-6.82A6.8 6.8 0 0 1 13.54 12ZM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42ZM24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12Z"/></svg>',
 };
+
+/* Icons for skill groups, publications and certifications */
+const SKILL_ICONS = {
+  brain:     '<svg viewBox="0 0 24 24"><path d="M9.5 3A2.5 2.5 0 0 0 7 5.5 2.5 2.5 0 0 0 5 8a2.5 2.5 0 0 0 .5 1.5A2.5 2.5 0 0 0 5 13a2.5 2.5 0 0 0 2 2.45V17a2.5 2.5 0 0 0 5 0V5.5A2.5 2.5 0 0 0 9.5 3ZM14.5 3A2.5 2.5 0 0 1 17 5.5 2.5 2.5 0 0 1 19 8a2.5 2.5 0 0 1-.5 1.5A2.5 2.5 0 0 1 19 13a2.5 2.5 0 0 1-2 2.45V17a2.5 2.5 0 0 1-5 0"/></svg>',
+  robot:     '<svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01M9 17.5h6"/><circle cx="12" cy="3" r="1.4"/></svg>',
+  code:      '<svg viewBox="0 0 24 24"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>',
+  chart:     '<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>',
+  layers:    '<svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5M3 17.5l9 5 9-5"/></svg>',
+  dashboard: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
+  cloud:     '<svg viewBox="0 0 24 24"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.2 10.4 4 4 0 0 0 6.5 19h11Z"/></svg>',
+};
+const PUB_ICONS = {
+  journal: '<svg viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H19v18H6.5A2.5 2.5 0 0 0 4 22V4.5Z"/><path d="M8 7h7M8 11h7"/></svg>',
+  article: '<svg viewBox="0 0 24 24"><path d="M4 4h13v16H6a2 2 0 0 1-2-2V4Z"/><path d="M17 8h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h4"/></svg>',
+};
+const CERT_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-2.5 5 2.5-1.5-7"/></svg>';
 
 const PROJECT_ICONS = {
   chat:  '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5Z"/></svg>',
@@ -50,7 +70,7 @@ function socialLinks(container) {
 
 /* ---------- Render everything from CONFIG ---------- */
 function render() {
-  const { identity, about, skills, projects, contact } = CONFIG;
+  const { identity, about, skills, projects, publications, certifications, contact } = CONFIG;
 
   // Theme accents
   document.documentElement.style.setProperty("--accent", CONFIG.theme.accent);
@@ -87,27 +107,26 @@ function render() {
 
   // Skills
   $("#skills-heading").textContent = skills.heading;
-  $("#skill-bars").innerHTML = skills.hard
+  $("#tech-skills").innerHTML = skills.technical
     .map(
-      (s) => `<div class="skill-bar">
-        <div class="skill-bar-head"><span>${s.name}</span><span class="pct">${s.value}%</span></div>
-        <div class="skill-bar-track"><div class="skill-bar-fill" data-value="${s.value}"></div></div>
-      </div>`
-    )
-    .join("");
-  $("#skill-stack").innerHTML = skills.stack
-    .map(
-      (g) => `<div class="stack-group">
-        <h4>${g.group}</h4>
+      (g) => `<div class="tech-card reveal">
+        <div class="tech-head">
+          <span class="tech-icon">${SKILL_ICONS[g.icon] || SKILL_ICONS.code}</span>
+          <h3>${g.group}</h3>
+        </div>
         <div class="chips">${g.items.map((i) => `<span class="chip">${i}</span>`).join("")}</div>
       </div>`
     )
     .join("");
+  $("#soft-heading").textContent = skills.softHeading || "Professional Skills";
   $("#soft-skills").innerHTML = skills.soft.map((s) => `<span class="chip">${s}</span>`).join("");
 
-  // Projects
+  // Projects — newest first (by `date`, entries without one go last)
   $("#projects-heading").textContent = projects.heading;
-  $("#projects-grid").innerHTML = projects.items
+  const sortedProjects = [...projects.items].sort((a, b) =>
+    String(b.date || "").localeCompare(String(a.date || ""))
+  );
+  $("#projects-grid").innerHTML = sortedProjects
     .map(
       (p) => `<a class="project-card reveal tilt-card" href="${p.link}" target="_blank" rel="noopener">
         <div class="project-top">
@@ -121,6 +140,12 @@ function render() {
     )
     .join("");
 
+  // Publications — featured entries always pinned to the top
+  renderPublications(publications);
+
+  // Certifications — hidden entirely until entries are added
+  renderCertifications(certifications);
+
   // Contact
   $("#contact-heading").textContent = contact.heading;
   $("#contact-blurb").textContent = contact.blurb;
@@ -133,6 +158,66 @@ function render() {
   socialLinks("#contact-socials");
   $("#footer-text").innerHTML =
     `Designed & built by <a href="${CONFIG.socials[0]?.url || "#"}" target="_blank" rel="noopener">${identity.shortName}</a> · ${new Date().getFullYear()}`;
+}
+
+/* ---------- Publications ---------- */
+function renderPublications(publications) {
+  const section = document.querySelector("#publications");
+  if (!publications || !publications.items.length) {
+    section.style.display = "none";
+    return;
+  }
+  $("#publications-heading").textContent = publications.heading;
+  // featured first, otherwise config order is preserved
+  const items = [...publications.items].sort(
+    (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+  );
+  $("#publications-list").innerHTML = items
+    .map(
+      (p) => `<article class="pub-card reveal${p.featured ? " featured" : ""}">
+        <div class="pub-icon">${PUB_ICONS[p.icon] || PUB_ICONS.article}</div>
+        <div class="pub-body">
+          <div class="pub-head">
+            <h3 class="pub-title">${p.title}</h3>
+            <a class="pub-btn" href="${p.link}" target="_blank" rel="noopener">
+              ${p.linkLabel || "View"} ${EXT_ICON}
+            </a>
+          </div>
+          ${p.venue ? `<p class="pub-venue">${p.venue}</p>` : ""}
+          ${p.meta ? `<p class="pub-meta mono">${p.meta}</p>` : ""}
+          <p class="pub-desc">${p.description}</p>
+          ${p.tags?.length
+            ? `<div class="project-tags">${p.tags.map((t) => `<span>${t}</span>`).join("")}</div>`
+            : ""}
+        </div>
+      </article>`
+    )
+    .join("");
+}
+
+/* ---------- Certifications ---------- */
+function renderCertifications(certifications) {
+  const section = document.querySelector("#certifications");
+  if (!certifications || !certifications.items.length) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "";
+  $("#certifications-heading").textContent = certifications.heading;
+  $("#certifications-grid").innerHTML = certifications.items
+    .map((c) => {
+      const inner = `
+        <div class="cert-icon">${CERT_ICON}</div>
+        <div>
+          <h3 class="cert-name">${c.name}</h3>
+          ${c.issuer ? `<p class="cert-issuer">${c.issuer}</p>` : ""}
+          ${c.year ? `<p class="cert-year mono">${c.year}</p>` : ""}
+        </div>`;
+      return c.link
+        ? `<a class="cert-card reveal" href="${c.link}" target="_blank" rel="noopener">${inner}<span class="cert-ext">${EXT_ICON}</span></a>`
+        : `<div class="cert-card reveal">${inner}</div>`;
+    })
+    .join("");
 }
 
 /* ---------- Email chooser ----------
@@ -307,14 +392,11 @@ function initReveals() {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         e.target.classList.add("visible");
-        e.target.querySelectorAll?.(".skill-bar-fill").forEach((f) => {
-          f.style.width = `${f.dataset.value}%`;
-        });
         obs.unobserve(e.target);
       }),
     { threshold: 0.12 }
   );
-  document.querySelectorAll(".reveal, #skill-bars").forEach((el) => obs.observe(el));
+  document.querySelectorAll(".reveal").forEach((el) => obs.observe(el));
 }
 
 /* ---------- 3D tilt on cards (desktop pointers only) ---------- */
