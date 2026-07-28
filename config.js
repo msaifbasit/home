@@ -41,13 +41,13 @@ const CONFIG = {
     // Each string renders as its own paragraph
     paragraphs: [
       "Hello world! This is Muhammad Saif Basit, a Computer Science graduate and a data geek. I'm all about the tech world, with a passion for AI/ML, Data Science, Computer Vision and Natural Language Processing.",
-      "At heart, I'm a researcher. As a first author of a publication in IEEE — the world's largest technical organization — I've experienced the full research cycle: framing the problem, digging through literature, experimenting rigorously and defending the results. That research-oriented mindset shapes how I work: I don't just apply models, I question them, benchmark them and push into the why behind every result.",
-      "I'm the kind of person who can't resist the allure of the latest tech trends — always reading, always experimenting with what's next in AI.",
+      "At heart, I'm a researcher. As a first author of a publication in IEEE - the world's largest technical organization - I've experienced the full research cycle: framing the problem, digging through literature, experimenting rigorously and defending the results. That research-oriented mindset shapes how I work: I don't just apply models, I question them, benchmark them and push into the why behind every result.",
+      "I'm the kind of person who can't resist the allure of the latest tech trends - always reading, always experimenting with what's next in AI.",
     ],
     // Quick facts shown as animated stat cards
     stats: [
       { value: "IEEE",  label: "First-Author Publication" },
-      { value: "6+",    label: "AI / ML Projects" },
+      { value: "10+",    label: "AI / ML Projects" },
       { value: "3",     label: "Cloud Platforms" },
       { value: "BSCS",  label: "Computer Science Graduate" },
     ],
@@ -121,7 +121,7 @@ const CONFIG = {
         title: "This 3D Portfolio",
         date: "2026-07",
         description:
-          "The site you're looking at — an interactive single-page portfolio with a custom WebGL neural-particle scene. Fully config-driven.",
+          "The site you're looking at - an interactive single-page portfolio with a custom WebGL neural-particle scene. Fully config-driven.",
         tags: ["WebGL", "JavaScript", "GitHub Pages"],
         link: "https://github.com/msaifbasit/portfolio",
         icon: "cube",
@@ -254,7 +254,7 @@ const CONFIG = {
   contact: {
     heading: "Get In Touch",
     blurb:
-      "Whether you have an idea to discuss, a role to fill, or just want to talk AI — my inbox is always open.",
+      "Whether you have an idea to discuss, a role to fill, or just want to talk AI - my inbox is always open!",
     email: "msaifbasit@gmail.com",
   },
 
