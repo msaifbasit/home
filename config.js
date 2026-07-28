@@ -223,7 +223,30 @@ const CONFIG = {
   certifications: {
     heading: "Certifications",
     items: [
-      // { name: "…", issuer: "…", year: "2024", link: "" },
+      {
+        name: "Supervised Machine Learning: Regression and Classification",
+        issuer: "DeepLearning.AI",
+      },
+      {
+        name: "Model Context Protocol (MCP) Mastery",
+        issuer: "Fractal Analytics",
+      },
+      {
+        name: "Data Science Virtual Experience Programme",
+        issuer: "British Airways",
+      },
+      {
+        name: "Cybersecurity and The Internet of Things",
+        issuer: "Kennesaw State University",
+      },
+      {
+        name: "Databases and SQL for Data Science with Python",
+        issuer: "IBM",
+      },
+      {
+        name: "Responsive Website Basics: Code with HTML, CSS, and JavaScript",
+        issuer: "University of London",
+      },
     ],
   },
 
