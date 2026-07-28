@@ -1,4 +1,4 @@
-# 🚀 3D Portfolio — Muhammad Saif Basit
+# 3D Portfolio — Muhammad Saif Basit
 
 An interactive, single-page 3D portfolio built with vanilla HTML/CSS/JS and
 a hand-written WebGL background (zero dependencies). No build step, no
@@ -6,7 +6,7 @@ framework — edit one file and push to update the live site.
 
 **Live site:** https://msaifbasit.github.io/home/
 
-## ✏️ How to customize (the only file you need)
+## How to customize? (the only file you need)
 
 Everything on the site — name, roles, bio, skills, projects, links, colours —
 lives in [`config.js`](config.js). Edit it, commit, push to `main`, and
@@ -24,7 +24,7 @@ Common edits:
 | Swap my photo | Replace `assets/profile.png` (keep the same filename). |
 | Tone down / disable the 3D scene | Lower `scene.particleCount`, or set `scene.enabled: false`. |
 
-## 🗂 Project structure
+## Project structure
 
 ```
 ├── index.html            # page skeleton (sections only, no content)
@@ -37,7 +37,7 @@ Common edits:
 └── .github/workflows/    # auto-deploy to GitHub Pages
 ```
 
-## 🖥 Run locally
+## Run locally
 
 Any static server works:
 
@@ -48,7 +48,7 @@ python3 -m http.server 8000
 
 (Modules won't load from `file://` — you need a server.)
 
-## 🌐 Deployment
+## Deployment
 
 Pushing to `main` triggers `.github/workflows/deploy.yml`, which publishes
 the repo to **GitHub Pages** at `https://msaifbasit.github.io/portfolio/`.
@@ -65,7 +65,7 @@ Source: GitHub Actions**, then re-run the workflow.
   repo **Settings → Pages → Custom domain** (GitHub hosts it for free; only
   the domain itself costs money).
 
-## 🧰 Tech
+## Tech
 
 - Hand-written WebGL (~10KB, zero dependencies) — particle network +
   wireframe icosahedron, mouse parallax, scroll dolly; rendered in a
