@@ -1,4 +1,4 @@
-# 3D Portfolio — Muhammad Saif Basit
+# 3D Portfolio - Muhammad Saif Basit
 
 An interactive, single-page 3D portfolio built with vanilla HTML/CSS/JS and
 a hand-written WebGL background (zero dependencies). No build step, no
