@@ -413,12 +413,11 @@ function initTilt() {
   });
 }
 
-/* ---------- Boot ---------- */
-const hidePreloader = () => document.querySelector("#preloader").classList.add("done");
-window.addEventListener("load", hidePreloader);
-// Safety net: never keep the preloader up longer than 2.5 s
-setTimeout(hidePreloader, 2500);
-
+/* ---------- Boot ----------
+   The preloader (Neural Boot animation) is owned by the inline
+   script in index.html so it starts the instant the page parses and
+   always plays its full sequence, independent of this module's load
+   timing. */
 render();
 initTyping();
 initNav();
