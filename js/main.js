@@ -421,7 +421,9 @@ function initTilt() {
 render();
 initTyping();
 initNav();
-initReveals();
+// Delay reveals until after preloader (which finishes ~3100ms after page load)
+// Add a small buffer to ensure smooth transition from preloader to content animations
+setTimeout(initReveals, 3200);
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
   // The scene is a ~10KB dependency-free WebGL module (js/bg-scene.js),
