@@ -27,7 +27,8 @@
   <div id="preloader" aria-hidden="true">
     <div id="boot-stage">
       <div id="boot-glyph"><svg id="boot-lines"></svg></div>
-      <p id="boot-caption">Initializing MSB core</p>
+      <p id="boot-caption">Booting Saif&rsquo;s Neural Core</p>
+      <div id="boot-progress"><div id="boot-progress-fill"></div></div>
     </div>
   </div>
   <script>
@@ -36,9 +37,9 @@
     (function () {
       var preloader = document.getElementById("preloader");
       var finish = function () { preloader.classList.add("done"); };
-      // Hard safety net: never keep the preloader up longer than 4s,
+      // Hard safety net: never keep the preloader up longer than 5s,
       // even if a later step throws.
-      var safety = setTimeout(finish, 4000);
+      var safety = setTimeout(finish, 5000);
 
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         finish();
@@ -133,13 +134,24 @@
           }, Math.random() * 120);
         });
         document.getElementById("boot-caption").style.opacity = 1;
-      }, 1500);
 
-      // Phase 4: hold briefly, then hand off to the page
-      setTimeout(function () {
-        clearTimeout(safety);
-        finish();
-      }, 2000);
+        // Progress bar: fills to 100%, then the page is handed off —
+        // this is what actually gates phase 4, not a fixed delay.
+        var progressWrap = document.getElementById("boot-progress");
+        var progressFill = document.getElementById("boot-progress-fill");
+        var fillDuration = 1300;
+        progressWrap.style.opacity = 1;
+        requestAnimationFrame(function () {
+          progressFill.style.transition = "width " + fillDuration + "ms cubic-bezier(.4,0,.2,1)";
+          progressFill.style.width = "100%";
+        });
+
+        // Phase 4: hold briefly after the bar completes, then hand off
+        setTimeout(function () {
+          clearTimeout(safety);
+          finish();
+        }, fillDuration + 300);
+      }, 1500);
     })();
   </script>
 
