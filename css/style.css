@@ -60,14 +60,30 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 #preloader.done { opacity: 0; visibility: hidden; }
-.loader-ring {
-  width: 52px; height: 52px;
-  border: 3px solid var(--card-border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
+
+/* "Neural Boot" preloader: particles assemble into <MSB/> — see the
+   inline script right after #preloader in index.html for the logic */
+#boot-stage {
+  display: flex; flex-direction: column; align-items: center; gap: 1.4rem;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+#boot-glyph { position: relative; }
+#boot-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.boot-dot {
+  position: absolute; left: 0; top: 0;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+#boot-caption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
 
 /* ---------- 3D canvas ---------- */
 #bg-canvas {
@@ -708,7 +724,7 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .type-caret, .scroll-hint span, .loader-ring { animation: none; }
+  .type-caret, .scroll-hint span { animation: none; }
   .photo-frame, .photo-frame::before { animation: none; }
   .about-photo:hover .photo-frame::after { animation: none; }
   * { transition-duration: 0.01ms !important; }
