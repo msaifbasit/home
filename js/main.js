@@ -419,11 +419,13 @@ function initTilt() {
    always plays its full sequence, independent of this module's load
    timing. */
 render();
-initTyping();
 initNav();
-// Delay reveals until after preloader (which finishes ~3100ms after page load)
-// Add a small buffer to ensure smooth transition from preloader to content animations
-setTimeout(initReveals, 3200);
+// Delay both typing and reveals until after preloader finishes (~3100ms)
+// This ensures no animations start until the Neural Boot preloader is completely done
+setTimeout(() => {
+  initTyping();
+  initReveals();
+}, 3200);
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
   // The scene is a ~10KB dependency-free WebGL module (js/bg-scene.js),
