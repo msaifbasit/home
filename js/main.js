@@ -413,6 +413,146 @@ function initTilt() {
   });
 }
 
+/* ---------- Custom cursor: "Liquid Blob" ----------
+   A droplet that stretches along its heading and settles when still;
+   over anything clickable it dissolves and four brackets clamp the
+   element instead. Desktop-only by design: a coarse pointer has no
+   hover state to express, and hiding the native cursor there would be
+   a pure downgrade — so touch devices and anyone who asked for reduced
+   motion never load it. */
+function initBlobCursor() {
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (!finePointer || prefersReducedMotion) return;
+
+  /* Anchors and buttons cover every interactive element on the page,
+     including the cards and chips rendered later from config.js —
+     matching on each move means new content needs no registration. */
+  const HOT = "a[href], button";
+  const VIOLET = ".project-card, .cert-card";
+  const PAD = 5;
+
+  const layer = document.createElement("div");
+  layer.id = "blob-cursor";
+  layer.setAttribute("aria-hidden", "true");
+  const mk = (cls, tag = "div") => {
+    const n = document.createElement(tag);
+    n.className = cls;
+    layer.appendChild(n);
+    return n;
+  };
+  const bodyEl = mk("blob-body");
+  const bodyDot = document.createElement("i");
+  bodyEl.appendChild(bodyDot);
+  const dropEl = mk("blob-drop");
+  dropEl.appendChild(document.createElement("i"));
+  const corners = ["tl", "tr", "bl", "br"].map((p) => mk("blob-corner " + p));
+  document.body.appendChild(layer);
+  document.body.classList.add("blob-cursor");
+
+  let x = 0, y = 0, px = 0, py = 0, vx = 0, vy = 0;   // pointer + velocity
+  let bx = 0, by = 0, dx = 0, dy = 0;                 // blob + trailing droplet
+  let stretch = 0, angle = 0, squash = 1, alpha = 1;
+  let kx = 0, ky = 0, kw = 0, kh = 0;                 // bracket box
+  let hot = null, wasHot = false, down = false, started = false;
+
+  const ease = (k, dt) => 1 - Math.pow(1 - k, dt / 16.667);
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    x = e.clientX;
+    y = e.clientY;
+    if (!started) {
+      started = true;
+      px = x; py = y;
+      bx = dx = x; by = dy = y;
+      layer.classList.add("on");
+    }
+    hot = e.target.closest ? e.target.closest(HOT) : null;
+  }, { passive: true });
+
+  document.addEventListener("pointerdown", () => { down = true; });
+  window.addEventListener("pointerup", () => { down = false; });
+  window.addEventListener("blur", () => { down = false; });
+  /* the pointer left the window entirely — take the blob with it */
+  document.addEventListener("mouseleave", () => layer.classList.remove("on"));
+  document.addEventListener("mouseenter", () => {
+    if (started) layer.classList.add("on");
+  });
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(now - last, 48);
+    last = now;
+
+    const ke = ease(0.28, dt);
+    vx += (x - px - vx) * ke;
+    vy += (y - py - vy) * ke;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+
+    const e1 = ease(0.3, dt), e2 = ease(0.11, dt), e3 = ease(0.24, dt);
+    bx += (x - bx) * e1;
+    by += (y - by) * e1;
+    dx += (x - dx) * e2;
+    dy += (y - dy) * e2;
+
+    stretch += (clamp(speed * 0.026, 0, 0.42) - stretch) * ease(0.22, dt);
+    if (speed > 0.6) angle = Math.atan2(vy, vx);
+    squash += ((down ? 0.62 : 1) - squash) * ease(0.28, dt);
+    alpha += ((hot ? 0 : 1) - alpha) * e3;
+
+    bodyEl.style.transform = `translate3d(${bx}px,${by}px,0)`;
+    bodyEl.style.opacity = alpha.toFixed(3);
+    bodyDot.style.transform =
+      `translate(-50%,-50%) rotate(${angle}rad) ` +
+      `scale(${((1 + stretch) * squash).toFixed(3)},${((1 - stretch * 0.75) * squash).toFixed(3)})`;
+
+    dropEl.style.transform = `translate3d(${dx}px,${dy}px,0)`;
+    dropEl.style.opacity = (alpha * clamp(speed / 14, 0, 0.8)).toFixed(3);
+
+    if (hot && hot.isConnected) {
+      /* measured every frame so the brackets stay locked on while the
+         page scrolls under a held hover */
+      const r = hot.getBoundingClientRect();
+      const tx = r.left - PAD, ty = r.top - PAD;
+      const tw = r.width + PAD * 2, th = r.height + PAD * 2;
+      if (!wasHot) {
+        kx = tx; ky = ty; kw = tw; kh = th;   // snap on arrival, morph after
+      } else {
+        kx += (tx - kx) * e3;
+        ky += (ty - ky) * e3;
+        kw += (tw - kw) * e3;
+        kh += (th - kh) * e3;
+      }
+      const violet = hot.matches(VIOLET);
+      /* Arms scale with the target: fixed 14px arms nearly meet on some-
+         thing nav-link sized and read as a plain box instead of corners. */
+      const arm = clamp(Math.min(kw, kh) * 0.32, 6, 14);
+      const pos = [
+        [kx, ky],
+        [kx + kw - arm, ky],
+        [kx, ky + kh - arm],
+        [kx + kw - arm, ky + kh - arm]
+      ];
+      corners.forEach((c, i) => {
+        c.style.opacity = "1";
+        c.style.width = c.style.height = arm.toFixed(1) + "px";
+        c.style.borderColor = violet ? "var(--accent-2)" : "var(--accent)";
+        c.style.transform = `translate3d(${pos[i][0]}px,${pos[i][1]}px,0)`;
+      });
+      wasHot = true;
+    } else {
+      if (wasHot) corners.forEach((c) => (c.style.opacity = "0"));
+      wasHot = false;
+    }
+
+    px = x;
+    py = y;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
 /* ---------- Boot ----------
    The preloader (Neural Boot animation) is owned by the inline
    script in index.html so it starts the instant the page parses and
@@ -420,6 +560,9 @@ function initTilt() {
    timing. */
 render();
 initNav();
+// Not delayed with the reveals below: the cursor is an input affordance,
+// not a reveal animation — it has to respond from the first frame.
+initBlobCursor();
 // Delay both typing and reveals until after preloader finishes (~3100ms)
 // This ensures no animations start until the Neural Boot preloader is completely done
 setTimeout(() => {

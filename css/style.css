@@ -736,6 +736,70 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
   .hero .socials { justify-content: center; width: 100%; }
 }
 
+/* ---------- Custom cursor: "Liquid Blob" ----------
+   A droplet that squashes and stretches along its heading, and splits
+   into four brackets that clamp whatever it hovers. Desktop-only: the
+   .blob-cursor class is added from main.js and only on a fine pointer
+   with motion allowed, so touch and reduced-motion keep the native
+   cursor. Everything here is scoped to that class — remove the class
+   and the site is exactly as it was. */
+#blob-cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 200;        /* above the preloader (100) and the nav (50) */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#blob-cursor.on { opacity: 1; }
+
+/* `.blob-cursor *` beats every single-class cursor:pointer rule in this
+   file, so the native pointer is hidden without needing !important */
+body.blob-cursor,
+body.blob-cursor * { cursor: none; }
+
+.blob-body,
+.blob-drop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+.blob-body i,
+.blob-drop i {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+}
+.blob-body i {
+  width: 26px;
+  height: 26px;
+  background: radial-gradient(circle at 35% 32%, #7ef0ff, var(--accent) 45%, var(--accent-2));
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.5);
+}
+.blob-drop i {
+  width: 9px;
+  height: 9px;
+  background: var(--accent-2);
+  opacity: 0.65;
+}
+
+/* the four corner brackets that clamp a hovered element */
+.blob-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.blob-corner.tl { border-right: 0; border-bottom: 0; }
+.blob-corner.tr { border-left: 0;  border-bottom: 0; }
+.blob-corner.bl { border-right: 0; border-top: 0; }
+.blob-corner.br { border-left: 0;  border-top: 0; }
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
