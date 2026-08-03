@@ -80,7 +80,7 @@ function render() {
   const fullName = [identity.firstName, identity.middleName, identity.lastName]
     .filter(Boolean)
     .join(" ");
-  document.title = `${fullName} — ${identity.roles[0]}`;
+  document.title = `${fullName} - ${identity.roles[0]}`;
   $("#hero-name").textContent = fullName;
   $("#hero-tagline").textContent = identity.tagline;
   $("#about-img").src = identity.photo;
@@ -143,7 +143,7 @@ function render() {
   // Publications — featured entries always pinned to the top
   renderPublications(publications);
 
-  // Certifications — hidden entirely until entries are added
+  // Certifications - hidden entirely until entries are added
   renderCertifications(certifications);
 
   // Contact
@@ -204,7 +204,11 @@ function renderCertifications(certifications) {
   }
   section.style.display = "";
   $("#certifications-heading").textContent = certifications.heading;
-  $("#certifications-grid").innerHTML = certifications.items
+  // featured entries stay pinned to the top however many are added below
+  const items = [...certifications.items].sort(
+    (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+  );
+  $("#certifications-grid").innerHTML = items
     .map((c) => {
       const inner = `
         <div class="cert-icon">${CERT_ICON}</div>
