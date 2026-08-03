@@ -160,13 +160,24 @@ function render() {
     `Designed & built by <a href="${CONFIG.socials[0]?.url || "#"}" target="_blank" rel="noopener">${identity.shortName}</a> · ${new Date().getFullYear()}`;
 }
 
+/* Hides a section and its navbar link together, so emptying a section
+   in config.js never leaves a nav link pointing at nothing. */
+function setSectionVisible(id, visible) {
+  const section = document.querySelector(`#${id}`);
+  if (section) section.style.display = visible ? "" : "none";
+  const link = document.querySelector(`.nav-link[href="#${id}"]`);
+  if (link && link.parentElement) {
+    link.parentElement.style.display = visible ? "" : "none";
+  }
+}
+
 /* ---------- Publications ---------- */
 function renderPublications(publications) {
-  const section = document.querySelector("#publications");
   if (!publications || !publications.items.length) {
-    section.style.display = "none";
+    setSectionVisible("publications", false);
     return;
   }
+  setSectionVisible("publications", true);
   $("#publications-heading").textContent = publications.heading;
   // featured first, otherwise config order is preserved
   const items = [...publications.items].sort(
@@ -197,12 +208,11 @@ function renderPublications(publications) {
 
 /* ---------- Certifications ---------- */
 function renderCertifications(certifications) {
-  const section = document.querySelector("#certifications");
   if (!certifications || !certifications.items.length) {
-    section.style.display = "none";
+    setSectionVisible("certifications", false);
     return;
   }
-  section.style.display = "";
+  setSectionVisible("certifications", true);
   $("#certifications-heading").textContent = certifications.heading;
   // featured entries stay pinned to the top however many are added below
   const items = [...certifications.items].sort(

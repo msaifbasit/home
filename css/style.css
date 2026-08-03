@@ -709,15 +709,8 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
-  .about-grid { grid-template-columns: 1fr; }
-  .about-photo { max-width: 280px; margin-inline: auto; }
-  .tech-grid { grid-template-columns: 1fr; }
-  .pub-card { flex-direction: column; gap: 1rem; }
-  .pub-head { flex-direction: column; gap: 0.8rem; }
-  .pub-btn { align-self: flex-start; }
-}
-
-@media (max-width: 720px) {
+  /* The nav collapses here rather than at 720px: with Certifications
+     added, eight items no longer fit on one line below ~790px. */
   .nav-toggle { display: flex; }
   .nav-links {
     position: fixed; top: 0; right: 0; bottom: 0; left: 32%;
@@ -731,6 +724,16 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
   }
   .nav-links.open { transform: translateX(0); }
   .nav-link { font-size: 1.15rem; }
+
+  .about-grid { grid-template-columns: 1fr; }
+  .about-photo { max-width: 280px; margin-inline: auto; }
+  .tech-grid { grid-template-columns: 1fr; }
+  .pub-card { flex-direction: column; gap: 1rem; }
+  .pub-head { flex-direction: column; gap: 0.8rem; }
+  .pub-btn { align-self: flex-start; }
+}
+
+@media (max-width: 720px) {
   .hero-cta { flex-direction: column; align-items: center; width: 100%; }
   .hero-cta .btn { width: min(230px, 72%); text-align: center; }
   .hero .socials { justify-content: center; width: 100%; }
