@@ -5,14 +5,22 @@
    ============================================================ */
 
 :root {
-  --bg: #0a0e1a;
-  --bg-soft: #101527;
+  /* "Cobalt & Amber" — deep cobalt night, amber lead, cobalt-blue second */
+  --bg: #070c1a;
+  --bg-soft: #0e1526;
   --card: rgba(255, 255, 255, 0.04);
   --card-border: rgba(255, 255, 255, 0.08);
-  --text: #e6edf7;
-  --text-dim: #8b98b8;
-  --accent: #22d3ee;      /* overridden from config.js */
-  --accent-2: #a78bfa;    /* overridden from config.js */
+  --text: #e9edf7;
+  --text-dim: #8a94ad;
+  --accent: #f2b544;      /* overridden from config.js */
+  --accent-2: #6c8cff;    /* overridden from config.js */
+  /* Channel-only copies of the two accents, so every translucent glow and
+     gradient below derives from the accent instead of hardcoding it.
+     main.js recomputes these from config.js on load, which means changing
+     the accent there now recolours the tints too. */
+  --accent-rgb: 242 181 68;
+  --accent-2-rgb: 108 140 255;
+  --bg-rgb: 7 12 26;      /* channel copy of --bg, for the navbar glass */
   /* Three type roles. Display and body are the same family today, but
      headings read through --font-display so swapping in a separate
      display face later is a one-line change. */
@@ -55,7 +63,7 @@ body {
 
 .container { width: min(1120px, 92%); margin-inline: auto; }
 
-::selection { background: var(--accent); color: #06121a; }
+::selection { background: var(--accent); color: var(--bg); }
 
 /* Subtle glow blobs behind content */
 body::before,
@@ -145,7 +153,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   content: "";
   position: absolute; inset: 0;
   z-index: -1;
-  background: rgba(10, 14, 26, 0.75);
+  background: rgb(var(--bg-rgb) / 0.75);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   opacity: 0;
@@ -193,7 +201,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   transition: background 0.25s ease, color 0.25s ease;
 }
 .nav-resume::after { display: none; }
-.nav-resume:hover { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
+.nav-resume:hover { background: rgb(var(--accent-rgb) / 0.12); color: var(--accent); }
 
 .nav-toggle {
   display: none;
@@ -288,18 +296,18 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 }
 .btn-solid {
   background: linear-gradient(120deg, var(--accent), var(--accent-2));
-  color: #0a0e1a;
+  color: var(--bg);
 }
 .btn-solid:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(34, 211, 238, 0.35);
+  box-shadow: 0 12px 30px rgb(var(--accent-rgb) / 0.35);
 }
 .btn-ghost {
   border: 1px solid var(--accent);
   color: var(--accent);
 }
 .btn-ghost:hover {
-  background: rgba(34, 211, 238, 0.1);
+  background: rgb(var(--accent-rgb) / 0.1);
   transform: translateY(-3px);
 }
 .btn-lg { padding: 1rem 2.4rem; font-size: 1.05rem; }
@@ -319,7 +327,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   color: var(--accent);
   border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.18);
+  box-shadow: 0 10px 24px rgb(var(--accent-rgb) / 0.18);
 }
 .socials svg { width: 20px; height: 20px; fill: currentColor; }
 
@@ -360,7 +368,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   content: "";
   position: absolute; inset: 6%;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, rgba(34, 211, 238, 0.4), rgba(167, 139, 250, 0.28) 55%, transparent 75%);
+  background: radial-gradient(circle at 40% 35%, rgb(var(--accent-rgb) / 0.4), rgb(var(--accent-2-rgb) / 0.28) 55%, transparent 75%);
   filter: blur(32px);
   z-index: -1;
   animation: glowpulse 5.5s ease-in-out infinite;
@@ -385,7 +393,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   animation: ringspin 4s linear infinite;
 }
 .about-photo:hover .photo-frame {
-  filter: drop-shadow(0 0 26px rgba(34, 211, 238, 0.45));
+  filter: drop-shadow(0 0 26px rgb(var(--accent-rgb) / 0.45));
 }
 .photo-frame img {
   display: block; width: 100%; height: auto;
@@ -459,7 +467,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 42px; height: 42px;
   display: grid; place-items: center;
   border-radius: 11px;
-  background: linear-gradient(140deg, rgba(34, 211, 238, 0.14), rgba(167, 139, 250, 0.14));
+  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
   border: 1px solid var(--card-border);
 }
 .tech-icon svg {
@@ -491,7 +499,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   display: flex; flex-wrap: wrap; gap: 0.6rem;
   justify-content: center;
 }
-.soft-skills .chip { border-color: rgba(167, 139, 250, 0.35); }
+.soft-skills .chip { border-color: rgb(var(--accent-2-rgb) / 0.35); }
 .soft-skills .chip:hover { color: var(--accent-2); border-color: var(--accent-2); }
 
 /* ---------- Projects ---------- */
@@ -524,7 +532,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 46px; height: 46px;
   display: grid; place-items: center;
   border-radius: 12px;
-  background: linear-gradient(140deg, rgba(34, 211, 238, 0.14), rgba(167, 139, 250, 0.14));
+  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
   border: 1px solid var(--card-border);
 }
 .project-icon svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
@@ -537,7 +545,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   font-family: var(--font-mono);
   font-size: 0.74rem;
   color: var(--accent);
-  background: rgba(34, 211, 238, 0.08);
+  background: rgb(var(--accent-rgb) / 0.08);
   padding: 0.22rem 0.6rem;
   border-radius: 999px;
 }
@@ -559,9 +567,9 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 }
 /* the peer-reviewed paper gets a highlighted treatment */
 .pub-card.featured {
-  border-color: rgba(34, 211, 238, 0.4);
+  border-color: rgb(var(--accent-rgb) / 0.4);
   background:
-    linear-gradient(120deg, rgba(34, 211, 238, 0.07), rgba(167, 139, 250, 0.05) 60%, transparent),
+    linear-gradient(120deg, rgb(var(--accent-rgb) / 0.07), rgb(var(--accent-2-rgb) / 0.05) 60%, transparent),
     var(--card);
 }
 .pub-icon {
@@ -569,7 +577,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 52px; height: 52px;
   display: grid; place-items: center;
   border-radius: 13px;
-  background: linear-gradient(140deg, rgba(34, 211, 238, 0.16), rgba(167, 139, 250, 0.16));
+  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.16), rgb(var(--accent-2-rgb) / 0.16));
   border: 1px solid var(--card-border);
 }
 .pub-icon svg {
@@ -597,7 +605,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   white-space: nowrap;
   transition: background 0.22s ease, transform 0.22s ease;
 }
-.pub-btn:hover { background: rgba(34, 211, 238, 0.12); transform: translateY(-2px); }
+.pub-btn:hover { background: rgb(var(--accent-rgb) / 0.12); transform: translateY(-2px); }
 .pub-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; }
 .pub-venue { color: var(--text); font-size: 0.9rem; opacity: 0.85; }
 .pub-meta { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.15rem; }
@@ -625,7 +633,7 @@ a.cert-card:hover { transform: translateY(-4px); border-color: var(--accent); }
   width: 42px; height: 42px;
   display: grid; place-items: center;
   border-radius: 11px;
-  background: linear-gradient(140deg, rgba(34, 211, 238, 0.14), rgba(167, 139, 250, 0.14));
+  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
   border: 1px solid var(--card-border);
 }
 .cert-icon svg {
@@ -662,7 +670,7 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
 .email-card {
   position: relative;
   width: min(380px, 94vw);
-  background: #101527;
+  background: var(--bg-soft);
   border: 1px solid var(--card-border);
   border-radius: 16px;
   padding: 1.9rem 1.6rem 1.6rem;
@@ -737,7 +745,7 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
     height: 100dvh;
     flex-direction: column; justify-content: center;
     gap: 2.2rem;
-    background: #0d1222;
+    background: var(--bg-soft);
     transform: translateX(110%);
     transition: transform 0.35s ease;
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
@@ -799,8 +807,8 @@ body.blob-cursor * { cursor: none; }
 .blob-body i {
   width: 26px;
   height: 26px;
-  background: radial-gradient(circle at 35% 32%, #7ef0ff, var(--accent) 45%, var(--accent-2));
-  box-shadow: 0 0 18px rgba(34, 211, 238, 0.5);
+  background: radial-gradient(circle at 35% 32%, #ffe3a3, var(--accent) 45%, var(--accent-2));
+  box-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.5);
 }
 .blob-drop i {
   width: 9px;

@@ -72,9 +72,22 @@ function socialLinks(container) {
 function render() {
   const { identity, about, skills, projects, publications, certifications, contact } = CONFIG;
 
-  // Theme accents
-  document.documentElement.style.setProperty("--accent", CONFIG.theme.accent);
-  document.documentElement.style.setProperty("--accent-2", CONFIG.theme.accent2);
+  // Theme accents. The channel-only copies feed every translucent glow and
+  // gradient in the stylesheet, so tints follow the accent set here instead
+  // of staying whatever colour they were hardcoded to.
+  const root = document.documentElement;
+  root.style.setProperty("--accent", CONFIG.theme.accent);
+  root.style.setProperty("--accent-2", CONFIG.theme.accent2);
+  const channels = (hex) => {
+    const h = String(hex).trim().replace("#", "");
+    const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    if (!/^[0-9a-f]{6}$/i.test(full)) return null;  // leave the CSS default
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)).join(" ");
+  };
+  const accRgb = channels(CONFIG.theme.accent);
+  const acc2Rgb = channels(CONFIG.theme.accent2);
+  if (accRgb) root.style.setProperty("--accent-rgb", accRgb);
+  if (acc2Rgb) root.style.setProperty("--accent-2-rgb", acc2Rgb);
 
   // Identity
   const fullName = [identity.firstName, identity.middleName, identity.lastName]

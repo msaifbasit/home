@@ -281,8 +281,8 @@ const CONFIG = {
   /* ---------- Theme ----------
      Tweak the site's accent colours (any CSS colour works).     */
   theme: {
-    accent:  "#22d3ee",   // cyan  — primary accent
-    accent2: "#a78bfa",   // violet — secondary accent
+    accent:  "#f2b544",   // amber  - primary accent
+    accent2: "#6c8cff",   // cobalt - secondary accent
   },
 
   /* ---------- 3D background ---------- */
