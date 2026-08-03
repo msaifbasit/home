@@ -13,7 +13,11 @@
   --text-dim: #8b98b8;
   --accent: #22d3ee;      /* overridden from config.js */
   --accent-2: #a78bfa;    /* overridden from config.js */
-  --font-main: "Space Grotesk", system-ui, sans-serif;
+  /* Three type roles. Display and body are the same family today, but
+     headings read through --font-display so swapping in a separate
+     display face later is a one-line change. */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-main: "Bricolage Grotesque", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --nav-h: 68px;
   --radius: 14px;
@@ -32,6 +36,22 @@ body {
 }
 
 .mono { font-family: var(--font-mono); }
+
+/* Titles read through the display role. Identical to --font-main today,
+   so this changes nothing visually — it exists so a separate display
+   face can be introduced without hunting down every heading.
+   Deliberately excludes .stat-value, .chip, .nav-logo and .project-tags,
+   which belong to the mono role. */
+.hero-name,
+.section-title,
+.subsection-title,
+.tech-head h3,
+.project-title,
+.pub-title,
+.cert-name,
+.email-card h3 {
+  font-family: var(--font-display);
+}
 
 .container { width: min(1120px, 92%); margin-inline: auto; }
 
