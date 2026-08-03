@@ -94,7 +94,11 @@ function render() {
     .filter(Boolean)
     .join(" ");
   document.title = `${fullName} - ${identity.roles[0]}`;
-  $("#hero-name").textContent = fullName;
+  // Wrapped in a span so the gradient can restart on each wrapped line —
+  // see .hero-name > span in style.css
+  const heroName = $("#hero-name");
+  heroName.textContent = "";
+  heroName.appendChild(document.createElement("span")).textContent = fullName;
   $("#hero-tagline").textContent = identity.tagline;
   $("#about-img").src = identity.photo;
   $("#about-img").alt = `Portrait of ${fullName}`;

@@ -233,11 +233,23 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -1px;
-  background: linear-gradient(120deg, var(--text) 40%, var(--accent) 70%, var(--accent-2) 100%);
+  margin-bottom: 0.6rem;
+}
+/* The white-to-amber ramp lives on an inline span, not the h1, so that
+   box-decoration-break can restart it on every line. Painted on the block
+   instead, the ramp is measured across the whole box: once the name wraps
+   on a phone, the short second line sits at the white end and never
+   reaches amber. Cloning per line makes every line read white-to-amber,
+   exactly as it does on one line on desktop. Browsers without
+   box-decoration-break fall back to a single ramp, which is still
+   white-to-amber. */
+.hero-name > span {
+  background: linear-gradient(90deg, var(--text) 25%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.6rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 .hero-role {
   font-size: clamp(1.25rem, 3.4vw, 2rem);
