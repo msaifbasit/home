@@ -125,8 +125,8 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 0%;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  box-shadow: 0 0 10px 1px var(--accent);
+  background: var(--accent-2);
+  box-shadow: 0 0 10px 1px var(--accent-2);
 }
 
 /* ---------- 3D canvas ---------- */
@@ -187,7 +187,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   content: "";
   position: absolute; left: 0; bottom: -5px;
   width: 0; height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: var(--accent-2);
   border-radius: 2px;
   transition: width 0.25s ease;
 }
@@ -295,7 +295,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
 .btn-solid {
-  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  background: var(--accent-2);
   color: var(--bg);
 }
 .btn-solid:hover {
@@ -368,7 +368,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   content: "";
   position: absolute; inset: 6%;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, rgb(var(--accent-rgb) / 0.4), rgb(var(--accent-2-rgb) / 0.28) 55%, transparent 75%);
+  background: rgb(var(--accent-2-rgb) / 0.34);
   filter: blur(32px);
   z-index: -1;
   animation: glowpulse 5.5s ease-in-out infinite;
@@ -379,7 +379,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   position: absolute; inset: -6px;
   border-radius: 50%;
   padding: 2px;
-  background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--accent));
+  background: var(--accent-2);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -432,10 +432,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   font-family: var(--font-mono);
   font-size: 1.7rem;
   font-weight: 600;
-  background: linear-gradient(120deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent-2);
 }
 .stat-label { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.3rem; }
 
@@ -467,7 +464,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 42px; height: 42px;
   display: grid; place-items: center;
   border-radius: 11px;
-  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
+  background: rgb(var(--accent-2-rgb) / 0.14);
   border: 1px solid var(--card-border);
 }
 .tech-icon svg {
@@ -532,7 +529,7 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
   width: 46px; height: 46px;
   display: grid; place-items: center;
   border-radius: 12px;
-  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
+  background: rgb(var(--accent-2-rgb) / 0.14);
   border: 1px solid var(--card-border);
 }
 .project-icon svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
@@ -568,16 +565,14 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 /* the peer-reviewed paper gets a highlighted treatment */
 .pub-card.featured {
   border-color: rgb(var(--accent-rgb) / 0.4);
-  background:
-    linear-gradient(120deg, rgb(var(--accent-rgb) / 0.07), rgb(var(--accent-2-rgb) / 0.05) 60%, transparent),
-    var(--card);
+  background: rgb(var(--accent-2-rgb) / 0.07);
 }
 .pub-icon {
   flex: none;
   width: 52px; height: 52px;
   display: grid; place-items: center;
   border-radius: 13px;
-  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.16), rgb(var(--accent-2-rgb) / 0.16));
+  background: rgb(var(--accent-2-rgb) / 0.16);
   border: 1px solid var(--card-border);
 }
 .pub-icon svg {
@@ -633,7 +628,7 @@ a.cert-card:hover { transform: translateY(-4px); border-color: var(--accent); }
   width: 42px; height: 42px;
   display: grid; place-items: center;
   border-radius: 11px;
-  background: linear-gradient(140deg, rgb(var(--accent-rgb) / 0.14), rgb(var(--accent-2-rgb) / 0.14));
+  background: rgb(var(--accent-2-rgb) / 0.14);
   border: 1px solid var(--card-border);
 }
 .cert-icon svg {
