@@ -315,10 +315,15 @@ const CONFIG = {
       },
     ],
 
-    // { degree, org, period }
+    // { degree, org, period } — most recent first
     education: [
       {
-        degree: "BSc in Computer Science",
+        degree: "Master's in Applied Artificial Intelligence",
+        org: "Eastern University, United States",
+        period: "in progress",
+      },
+      {
+        degree: "Bachelor of Science in Computer Science",
         org: "University of Management and Technology, Pakistan",
         period: "",
       },
@@ -327,6 +332,7 @@ const CONFIG = {
     // Anything else worth answering that isn't elsewhere in this file
     facts: [
       "He is currently a Data Scientist at Sealand Foodstuff Trading Co. in Jeddah, Saudi Arabia.",
+      "He is currently pursuing a Master's in Applied Artificial Intelligence at Eastern University in the United States, alongside his full-time role.",
       "He has 5+ years of experience across computer vision, NLP, deep learning and business analytics.",
       "He is a first author on an IEEE publication, presented at ICOSST 2022 in Lahore.",
       "He is an AWS Certified AI Practitioner, certified in 2026.",

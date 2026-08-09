@@ -220,7 +220,7 @@ function makeEngine(kb) {
       return pubs.length ? `${joinDocs(pubs)}` : "No publications listed yet.";
     }
 
-    if (/\b(education|degree|study|studied|graduat|university|college|school|attend|major|coursework|bscs)\b/.test(q)) {
+    if (/\b(education|degree|degrees|study|studying|studied|graduat|university|college|school|attend|major|coursework|bscs|bachelor|master|masters|msc|mba|phd|postgrad|pursuing|qualification)\b/.test(q)) {
       const ed = listOf("education");
       if (ed.length) return joinDocs(ed);
       return "He's a Computer Science graduate (BSCS). The finer details are on his resume" +
