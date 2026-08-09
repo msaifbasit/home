@@ -182,7 +182,16 @@ function makeEngine(kb) {
        has a subject and must fall through to the topic branches below. */
     if (/\b(who is (he|saif)|about (him|saif|yourself)|introduce|background|profile|summary|bio)\b/.test(q) ||
         /^(who is|tell me about (him|saif|yourself|you))\s*\??$/.test(q))
-      return `${full} is an ${roles[0] || "AI Engineer"} based in ${id.location}. ${CONFIG.about.paragraphs[0]}`;
+      return `${full} is an ${roles[0] || "AI Engineer"} based in ${id.location}. ` +
+             (chat.summary || CONFIG.about.paragraphs[0]);
+
+    /* "where does he work now" is about the employer, not the city, so it has
+       to be answered before the location branch claims the word "where". */
+    if (/\b(current|currently|now|today|these days|latest)\b/.test(q) &&
+        /\b(work|working|works|job|role|company|employ|doing|position)\b/.test(q)) {
+      const exp = listOf("experience");
+      if (exp.length) return `Right now — ${exp[0].render()}`;
+    }
 
     if (/\b(location|based|where|city|country|relocat|remote)\b/.test(q))
       return `He's based in ${id.location}. For anything about relocation or remote work, best to ask him directly — ${email}.`;
@@ -211,7 +220,7 @@ function makeEngine(kb) {
       return pubs.length ? `${joinDocs(pubs)}` : "No publications listed yet.";
     }
 
-    if (/\b(education|degree|study|studied|graduat)\b/.test(q)) {
+    if (/\b(education|degree|study|studied|graduat|university|college|school|attend|major|coursework|bscs)\b/.test(q)) {
       const ed = listOf("education");
       if (ed.length) return joinDocs(ed);
       return "He's a Computer Science graduate (BSCS). The finer details are on his resume" +
@@ -219,14 +228,21 @@ function makeEngine(kb) {
     }
 
     if (/\b(experience|work|worked|employ|company|companies|years)\b/.test(q)) {
-      const exp = listOf("experience");
-      if (exp.length) return joinDocs(exp);
       /* "what NLP experience does he have?" is a topic question wearing the
-         word 'experience'. Answer from the topic whenever one actually
-         matches, and keep the employment-history reply for questions that
-         are really about employment. */
-      const topical = retrieve(kb, raw, ["project", "skill", "publication"], 2);
-      if (topical.length) return joinDocs(topical);
+         word 'experience'. Strip the words common to every such question and
+         see whether a subject is left: if one is, answer from that subject;
+         if nothing is left the question really is about employment history. */
+      const GENERIC = new Set(["experience", "work", "worked", "working", "works",
+        "employment", "employer", "company", "companies", "job", "jobs", "years",
+        "year", "history", "career", "role", "roles", "professional", "background",
+        "total", "long", "position", "positions"]);
+      const subject = tokenize(raw).filter((t) => !GENERIC.has(t));
+      if (subject.length) {
+        const topical = retrieve(kb, raw, ["experience", "project", "skill", "publication", "fact"], 2);
+        if (topical.length) return joinDocs(topical);
+      }
+      const exp = listOf("experience");
+      if (exp.length) return (chat.summary ? chat.summary + "\n\n" : "") + joinDocs(exp);
       return "His hands-on work is best seen through his projects and his IEEE publication — ask me about either. " +
              `For a full employment history, the resume is the place${resume ? `: [open it](${resume})` : ""}.`;
     }

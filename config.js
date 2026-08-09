@@ -286,14 +286,53 @@ const CONFIG = {
     apiUrl: "",                        // e.g. "https://msb-chat.<you>.workers.dev"
     model: "llama-3.3-70b-versatile",  // only used when apiUrl is set
 
+    // One-line positioning statement, used when someone asks what he does
+    summary:
+      "AWS Certified Data Scientist and AI/ML Engineer with 5+ years of experience across computer vision, NLP, deep learning and business analytics, and a first-author IEEE publication.",
+
     // { role, org, period, summary }
-    experience: [],
+    experience: [
+      {
+        role: "Data Scientist",
+        org: "Sealand Foodstuff Trading Co., Jeddah",
+        period: "Nov 2023 - Present",
+        summary:
+          "Builds real-time Power BI dashboards and commercial KPI reporting from ERP data, automates cleaning and transformation in Python and DAX, and applies AI methods to internal systems that raise operational efficiency.",
+      },
+      {
+        role: "AI Engineer",
+        org: "Shah Nosh, Lahore",
+        period: "Jan 2021 - Oct 2023",
+        summary:
+          "Built a customer-traffic forecasting model that improved staff scheduling and cut food waste, ran NLP sentiment analysis on customer feedback, and shipped a live Looker Studio sales dashboard. His EDA work contributed to a 12% sales increase at peak hours, and he was named Innovator of the Month.",
+      },
+      {
+        role: "Full-Stack Web Developer",
+        org: "Freelance, Remote",
+        period: "Jan 2021 - Nov 2023",
+        summary:
+          "Built React front-ends with Python (Django, Flask, FastAPI) and Node.js back-ends, integrated LLMs and Transformers into production applications, and deployed across AWS, Azure and GCP with Git and CI/CD.",
+      },
+    ],
+
     // { degree, org, period }
-    education: [],
+    education: [
+      {
+        degree: "BSc in Computer Science",
+        org: "University of Management and Technology, Pakistan",
+        period: "",
+      },
+    ],
+
     // Anything else worth answering that isn't elsewhere in this file
     facts: [
+      "He is currently a Data Scientist at Sealand Foodstuff Trading Co. in Jeddah, Saudi Arabia.",
+      "He has 5+ years of experience across computer vision, NLP, deep learning and business analytics.",
       "He is a first author on an IEEE publication, presented at ICOSST 2022 in Lahore.",
       "He is an AWS Certified AI Practitioner, certified in 2026.",
+      "His degree coursework covered Artificial Intelligence, Machine Learning, Computer Vision, Data Mining, Web Technologies, Software Engineering, Data Structures & Algorithms, Linear Algebra and Probability & Statistics.",
+      "He builds BI and KPI dashboards in Power BI, Tableau and Looker Studio, and works in SQL, DAX and Excel alongside Python.",
+      "He has built agentic AI systems, including a self-hosted 24/7 Telegram bot that discovers and analyses AI tools using Ollama and the Tavily API, with no paid LLM API dependency.",
       "He writes about data and AI on Medium.",
     ],
   },
