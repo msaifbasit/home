@@ -50,7 +50,7 @@ const CONFIG = {
       { value: "IEEE",  label: "First-Author Publication" },
       { value: "AWS",   label: "Certified AI Practitioner" },
       { value: "10+",   label: "AI / ML Projects" },
-      { value: "BSCS",  label: "Computer Science Graduate" },
+      { value: "MS",    label: "Applied AI (in progress)" },
     ],
   },
 
