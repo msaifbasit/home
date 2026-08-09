@@ -6,6 +6,7 @@
    ============================================================ */
 
 import CONFIG from "../config.js";
+import { initChat } from "./chatbot.js";
 
 const $ = (sel) => document.querySelector(sel);
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -599,6 +600,7 @@ initBlobCursor();
 setTimeout(() => {
   initTyping();
   initReveals();
+  initChat(CONFIG);
 }, 3200);
 initTilt();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {

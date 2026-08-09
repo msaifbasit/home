@@ -260,6 +260,44 @@ const CONFIG = {
     ],
   },
 
+  /* ---------- Chatbot ----------
+     The assistant answers from everything else in this file, so it stays
+     correct as long as this file is. Two things to know:
+
+     experience / education — the site doesn't show these anywhere, so the
+       bot can't know them. Fill them in and it will answer questions about
+       your work history; leave them empty and it honestly says it doesn't
+       have them and points at the resume instead of inventing anything.
+
+     apiUrl — leave "" and the built-in engine answers instantly with no
+       key and no backend. Point it at your own proxy (see
+       worker/chat-worker.js) to use a real LLM. Never put an API key in
+       this file: it is public.                                        */
+  chat: {
+    enabled: true,
+    greeting:
+      "Hi! I'm Saif's assistant. Ask me about his skills, projects, publications or certifications - anything professional. I'll politely dodge the rest.",
+    suggestions: [
+      "What are his strongest skills?",
+      "Tell me about the IEEE paper",
+      "Is he AWS certified?",
+      "How do I contact him?",
+    ],
+    apiUrl: "",                        // e.g. "https://msb-chat.<you>.workers.dev"
+    model: "llama-3.3-70b-versatile",  // only used when apiUrl is set
+
+    // { role, org, period, summary }
+    experience: [],
+    // { degree, org, period }
+    education: [],
+    // Anything else worth answering that isn't elsewhere in this file
+    facts: [
+      "He is a first author on an IEEE publication, presented at ICOSST 2022 in Lahore.",
+      "He is an AWS Certified AI Practitioner, certified in 2026.",
+      "He writes about data and AI on Medium.",
+    ],
+  },
+
   /* ---------- Contact ---------- */
   contact: {
     heading: "Get In Touch",
