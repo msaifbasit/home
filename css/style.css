@@ -931,6 +931,7 @@ body.blob-cursor * { cursor: none; }
 .msb-chat.open .chat-fab .fab-label { display: none; }
 .msb-chat.open .chat-fab { padding: 13px; }
 
+.chat-panel[hidden] { display: none !important; }
 .chat-panel {
   order: 1;
   width: min(390px, calc(100vw - 28px));
@@ -1068,7 +1069,8 @@ body.blob-cursor * { cursor: none; }
 body.blob-cursor .chat-input { cursor: text; }
 
 @media (max-width: 520px) {
-  .msb-chat { right: 12px; left: 12px; bottom: 12px; align-items: stretch; }
+  .msb-chat { right: 12px; bottom: 12px; align-items: flex-end; }
+  .msb-chat.open { left: 12px; align-items: stretch; }
   .chat-panel { width: 100%; height: min(72dvh, 520px); }
   .chat-fab { align-self: flex-end; }
 }
