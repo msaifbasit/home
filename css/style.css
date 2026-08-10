@@ -157,6 +157,14 @@ body {
 }
 .navbar.scrolled { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35); }
 .navbar.scrolled::before { opacity: 1; }
+#scroll-progress {
+  position: fixed; top: var(--nav-h); left: 0;
+  width: 0%; height: 3px;
+  background: var(--accent);
+  z-index: 51;
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
 .nav-inner {
   height: 100%;
   display: flex; align-items: center; justify-content: space-between;
@@ -546,11 +554,11 @@ body {
   padding-inline: max((100vw - 1120px) / 2, 4vw);
   will-change: transform;
 }
-.projects-cta { display: flex; justify-content: center; margin-top: 0.6rem; }
+.projects-cta { display: flex; justify-content: center; margin-top: 1.4rem; padding-bottom: 0.6rem; }
 .project-card {
   display: flex; flex-direction: column;
-  flex: 0 0 310px;
-  width: 310px;
+  flex: 0 0 420px;
+  width: 420px;
   scroll-snap-align: start;
   background: var(--card);
   border: 1px solid var(--card-border);

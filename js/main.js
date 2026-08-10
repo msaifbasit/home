@@ -377,6 +377,18 @@ function initTyping() {
   })();
 }
 
+/* ---------- Page scroll-progress bar ---------- */
+function initScrollProgress() {
+  const bar = document.getElementById("scroll-progress");
+  if (!bar) return;
+  function update() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0).toFixed(2) + "%";
+  }
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+}
+
 /* ---------- Navbar behaviour ---------- */
 function initNav() {
   const navbar = $("#navbar");
@@ -658,6 +670,7 @@ function initBlobCursor() {
    timing. */
 render();
 initNav();
+initScrollProgress();
 // Not delayed with the reveals below: the cursor is an input affordance,
 // not a reveal animation — it has to respond from the first frame.
 initBlobCursor();

@@ -177,6 +177,8 @@
       </ul>
     </nav>
   </header>
+  <!-- Thin amber bar that fills left→right as the user scrolls the page -->
+  <div id="scroll-progress" aria-hidden="true"></div>
 
   <main>
     <!-- ============ HERO ============ -->
@@ -245,11 +247,13 @@
           <div class="projects-viewport reveal" id="projects-viewport">
             <div class="projects-track" id="projects-track"></div>
           </div>
-        </div>
-      </div>
-      <div class="container">
-        <div class="projects-cta">
-          <a href="#" id="projects-viewall" class="btn btn-ghost" target="_blank" rel="noopener">View All Projects</a>
+          <!-- Lives inside sticky so it stays visible throughout the
+               entire carousel scroll, not just after the section exits. -->
+          <div class="container">
+            <div class="projects-cta">
+              <a href="#" id="projects-viewall" class="btn btn-ghost" target="_blank" rel="noopener">View All Projects</a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
