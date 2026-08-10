@@ -367,8 +367,8 @@ const CONFIG = {
   /* ---------- Theme ----------
      Tweak the site's accent colours (any CSS colour works).     */
   theme: {
-    accent:  "#f2b544",   // amber  - primary accent
-    accent2: "#6c8cff",   // cobalt - secondary accent
+    accent:  "#f2b544",   // amber    - the only hue on the page
+    accent2: "#f6f5f2",   // off-white - a neutral, not a second colour
   },
 
   /* ---------- 3D background ---------- */

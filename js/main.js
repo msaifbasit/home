@@ -493,7 +493,6 @@ function initBlobCursor() {
      including the cards and chips rendered later from config.js —
      matching on each move means new content needs no registration. */
   const HOT = "a[href], button";
-  const VIOLET = ".project-card, .cert-card";
   const PAD = 5;
 
   const layer = document.createElement("div");
@@ -589,7 +588,6 @@ function initBlobCursor() {
         kw += (tw - kw) * e3;
         kh += (th - kh) * e3;
       }
-      const violet = hot.matches(VIOLET);
       /* Arms scale with the target: fixed 14px arms nearly meet on some-
          thing nav-link sized and read as a plain box instead of corners. */
       const arm = clamp(Math.min(kw, kh) * 0.32, 6, 14);
@@ -599,10 +597,11 @@ function initBlobCursor() {
         [kx, ky + kh - arm],
         [kx + kw - arm, ky + kh - arm]
       ];
+      // colour comes from the CSS default (var(--accent)) — the cursor
+      // is full amber everywhere, no second colour to switch between
       corners.forEach((c, i) => {
         c.style.opacity = "1";
         c.style.width = c.style.height = arm.toFixed(1) + "px";
-        c.style.borderColor = violet ? "var(--accent-2)" : "var(--accent)";
         c.style.transform = `translate3d(${pos[i][0]}px,${pos[i][1]}px,0)`;
       });
       wasHot = true;
