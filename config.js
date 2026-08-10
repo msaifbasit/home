@@ -117,6 +117,9 @@ const CONFIG = {
      link:  where the card points (GitHub, demo, …)                  */
   projects: {
     heading: "Projects",
+    // Sends "View All Projects" below the carousel — defaults to the
+    // GitHub profile's repositories tab if left blank.
+    viewAllUrl: "https://github.com/msaifbasit?tab=repositories",
     items: [
       {
         title: "This 3D Portfolio",

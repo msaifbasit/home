@@ -511,14 +511,39 @@ body::after  { background: var(--accent-2); bottom: -25vmax; left: -18vmax; }
 .soft-skills .chip { border-color: rgb(var(--accent-2-rgb) / 0.35); }
 .soft-skills .chip:hover { color: var(--accent-2); border-color: var(--accent-2); }
 
-/* ---------- Projects ---------- */
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 1.4rem;
+/* ---------- Projects carousel ----------
+   .projects-viewport is the clipping/scrolling box; .projects-track is
+   the flex row it clips. Base state (below) is a plain native-scroll
+   strip with scroll-snap — the fallback for narrow screens, touch and
+   reduced motion. On a wide desktop viewport, initProjectsCarousel()
+   in main.js sets overflow-x:hidden here and drives .projects-track's
+   transform from page-scroll position instead. */
+.projects-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding: 0.4rem 0 1rem;
 }
+.projects-viewport::-webkit-scrollbar { display: none; }
+.projects-track {
+  display: flex;
+  gap: 1.4rem;
+  width: max-content;
+  /* Lines the first card up with the heading above it: the same inset
+     .container uses to centre at min(1120px, 92%), reproduced here since
+     the track sits outside .container so it has room to run past the
+     right edge. */
+  padding-inline: max((100vw - 1120px) / 2, 4vw);
+  will-change: transform;
+}
+.projects-cta { display: flex; justify-content: center; margin-top: 0.6rem; }
 .project-card {
   display: flex; flex-direction: column;
+  flex: 0 0 310px;
+  width: 310px;
+  scroll-snap-align: start;
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
@@ -772,6 +797,10 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
   .hero-cta { flex-direction: column; align-items: center; width: 100%; }
   .hero-cta .btn { width: min(230px, 72%); text-align: center; }
   .hero .socials { justify-content: center; width: 100%; }
+  /* initProjectsCarousel() never activates below 860px, so this is
+     always the native-scroll strip here — sized to peek the next card. */
+  .project-card { flex-basis: 82vw; width: 82vw; }
+  .projects-track { padding-inline: 4vw; }
 }
 
 /* ---------- Custom cursor: "Liquid Blob" ----------

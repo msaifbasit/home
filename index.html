@@ -225,7 +225,18 @@
     <section id="projects" class="section">
       <div class="container">
         <h2 class="section-title reveal"><span class="mono section-index">03.</span> <span id="projects-heading">Projects</span></h2>
-        <div class="projects-grid" id="projects-grid"></div>
+      </div>
+      <!-- Full-bleed, not inside .container: the track has to extend past
+           the readable column width for there to be anything to scroll
+           through. js/main.js drives its horizontal position on desktop;
+           see initProjectsCarousel. -->
+      <div class="projects-viewport reveal" id="projects-viewport">
+        <div class="projects-track" id="projects-track"></div>
+      </div>
+      <div class="container">
+        <div class="projects-cta">
+          <a href="#" id="projects-viewall" class="btn btn-ghost" target="_blank" rel="noopener">View All Projects</a>
+        </div>
       </div>
     </section>
 

@@ -144,9 +144,9 @@ function render() {
   const sortedProjects = [...projects.items].sort((a, b) =>
     String(b.date || "").localeCompare(String(a.date || ""))
   );
-  $("#projects-grid").innerHTML = sortedProjects
+  $("#projects-track").innerHTML = sortedProjects
     .map(
-      (p) => `<a class="project-card reveal tilt-card" href="${p.link}" target="_blank" rel="noopener">
+      (p) => `<a class="project-card tilt-card" href="${p.link}" target="_blank" rel="noopener">
         <div class="project-top">
           <div class="project-icon">${PROJECT_ICONS[p.icon] || PROJECT_ICONS.code}</div>
           <div class="project-ext">${EXT_ICON}</div>
@@ -157,6 +157,7 @@ function render() {
       </a>`
     )
     .join("");
+  $("#projects-viewall").href = projects.viewAllUrl || "https://github.com/msaifbasit";
 
   // Publications — featured entries always pinned to the top
   renderPublications(publications);
@@ -445,6 +446,38 @@ function initTilt() {
   });
 }
 
+/* ---------- Projects carousel ----------
+   On a wide desktop viewport, the track's horizontal position is driven
+   by how far the section has scrolled through the page — scroll down,
+   the cards drift left. On narrow screens, touch devices and whenever
+   reduced motion is requested, this never runs: the viewport falls back
+   to its base CSS, a plain swipeable/scrollable strip with scroll-snap,
+   so every card stays reachable by touch, trackpad or keyboard without
+   depending on page-scroll position. */
+function initProjectsCarousel() {
+  const viewport = $("#projects-viewport");
+  const track = $("#projects-track");
+  if (!viewport || !track) return;
+  if (prefersReducedMotion || !window.matchMedia("(min-width: 860px)").matches) return;
+
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  viewport.style.overflowX = "hidden"; // JS drives position now, not native scroll
+
+  function frame() {
+    const maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
+    if (maxShift > 0) {
+      const r = viewport.getBoundingClientRect();
+      // 0 while the viewport is still below the screen, 1 once it has
+      // scrolled fully past the top — recomputed every frame, so a
+      // resize is picked up for free without a separate listener.
+      const progress = clamp((window.innerHeight - r.top) / (r.height + window.innerHeight), 0, 1);
+      track.style.transform = `translate3d(${(-progress * maxShift).toFixed(1)}px,0,0)`;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
 /* ---------- Custom cursor: "Liquid Blob" ----------
    A droplet that stretches along its heading and settles when still;
    over anything clickable it dissolves and four brackets clamp the
@@ -603,6 +636,7 @@ setTimeout(() => {
   initChat(CONFIG);
 }, 3200);
 initTilt();
+initProjectsCarousel();
 if (CONFIG.scene.enabled && !prefersReducedMotion) {
   // The scene is a ~10KB dependency-free WebGL module (js/bg-scene.js),
   // so there is nothing heavy to parse. It still runs inside a Web
