@@ -349,6 +349,10 @@ body {
 
 /* ---------- Sections ---------- */
 .section { padding: clamp(4.5rem, 10vh, 7.5rem) 0; position: relative; }
+/* Projects ends where its content ends; Publications breathes less on top
+   so it reads as the immediate continuation after the carousel + View All. */
+#projects { padding-bottom: 0; }
+#publications { padding-top: clamp(2rem, 4vh, 3rem); }
 .section-title {
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 700;
