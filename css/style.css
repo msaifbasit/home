@@ -814,9 +814,7 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
   .hero-cta { flex-direction: column; align-items: center; width: 100%; }
   .hero-cta .btn { width: min(230px, 72%); text-align: center; }
   .hero .socials { justify-content: center; width: 100%; }
-  /* initProjectsCarousel() never activates below 860px, so this is
-     always the native-scroll strip here — sized to peek the next card. */
-  .project-card { flex-basis: 82vw; width: 82vw; }
+  .project-card { flex-basis: 65vw; width: 65vw; }
   .projects-track { padding-inline: 4vw; }
 }
 

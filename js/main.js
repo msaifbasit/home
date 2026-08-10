@@ -459,12 +459,11 @@ function initTilt() {
 }
 
 /* ---------- Projects auto-marquee ----------
-   Cards loop continuously right-to-left at a calm reading pace.
-   The track is duplicated so the reset is seamless: when the
-   translate reaches the start of the clone set, the CSS animation
-   wraps back to 0 and the clone is indistinguishable from the
-   original. Pauses on hover so users can read a card.
-   Falls back to native horizontal scroll for reduced-motion. */
+   Cards loop continuously right-to-left. The track is cloned so the
+   seam is invisible: dist = firstClone.offsetLeft - origCards[0].offsetLeft
+   is exactly one set width (cards + gaps, no padding), so when the
+   animation wraps from "to" back to "from" the clone lands exactly
+   where the original was. Speed is slightly higher on desktop. */
 function initProjectsCarousel() {
   const viewport = $("#projects-viewport");
   const track = $("#projects-track");
@@ -472,6 +471,8 @@ function initProjectsCarousel() {
   if (prefersReducedMotion) return;
 
   const origCards = Array.from(track.children);
+  if (!origCards.length) return;
+
   origCards.forEach(card => {
     const clone = card.cloneNode(true);
     clone.setAttribute("aria-hidden", "true");
@@ -480,23 +481,39 @@ function initProjectsCarousel() {
 
   viewport.style.overflowX = "hidden";
 
-  const SPEED = 55; // px per second
+  const isMobile = window.matchMedia("(max-width: 720px)").matches;
+  const SPEED = isMobile ? 55 : 72; // px per second
 
   function setup() {
     const firstClone = track.children[origCards.length];
-    if (!firstClone) return;
-    const dist = firstClone.offsetLeft;
+    if (!firstClone || !origCards[0]) return;
+    // Exclude track padding from the loop distance: only measure the
+    // card+gap span from first original to first clone so the reset
+    // is pixel-perfect and the seam is invisible.
+    const dist = firstClone.offsetLeft - origCards[0].offsetLeft;
     if (dist <= 0) return;
+    track.classList.remove("marquee-running");
+    // Force a style flush so removing+re-adding the class restarts
+    // the animation from frame 0 rather than from mid-cycle.
+    void track.offsetWidth;
     track.style.setProperty("--mq-end", `-${dist}px`);
     track.style.setProperty("--mq-dur", `${(dist / SPEED).toFixed(1)}s`);
     track.classList.add("marquee-running");
   }
 
-  requestAnimationFrame(() => requestAnimationFrame(setup));
-
-  window.addEventListener("resize", () => {
-    track.classList.remove("marquee-running");
+  // Wait for web fonts before measuring — font loading shifts card text
+  // and changes offsetLeft, which would make the loop point wrong and
+  // show a visible jump every cycle.
+  document.fonts.ready.then(() => {
     requestAnimationFrame(() => requestAnimationFrame(setup));
+  });
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      requestAnimationFrame(() => requestAnimationFrame(setup));
+    }, 150);
   }, { passive: true });
 }
 
