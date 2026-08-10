@@ -349,10 +349,6 @@ body {
 
 /* ---------- Sections ---------- */
 .section { padding: clamp(4.5rem, 10vh, 7.5rem) 0; position: relative; }
-/* Projects ends where its content ends; Publications breathes less on top
-   so it reads as the immediate continuation after the carousel + View All. */
-#projects { padding-bottom: 0; }
-#publications { padding-top: clamp(2rem, 4vh, 3rem); }
 .section-title {
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 700;
@@ -527,16 +523,15 @@ body {
    reduced motion. On a wide desktop viewport, initProjectsCarousel()
    in main.js sets overflow-x:hidden here and drives .projects-track's
    transform from page-scroll position instead. */
-/* The pin wrapper is given real height (a sibling's, or in this case its
-   own, set directly) by initProjectsCarousel() in main.js — enough that
-   #projects-sticky, pinned via position:sticky, stays on screen for
-   exactly that much extra scroll. padding-bottom cannot stand in for
-   this: verified while building the Publications "Sticky Stack" option
-   that padding on a sticky item's containing block gives it no room to
-   stick within in this Chromium build, so the sticky item never clamps —
-   it just tracks scroll 1:1. A real height is required. */
-.projects-pin-wrap { position: relative; }
-.projects-sticky { position: sticky; top: var(--nav-h); }
+/* ---------- Projects marquee ---------- */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--mq-end, -50%)); }
+}
+.projects-track.marquee-running {
+  animation: marquee-x var(--mq-dur, 30s) linear infinite;
+}
+.projects-track.marquee-running:hover { animation-play-state: paused; }
 
 .projects-viewport {
   overflow-x: auto;
@@ -558,7 +553,7 @@ body {
   padding-inline: max((100vw - 1120px) / 2, 4vw);
   will-change: transform;
 }
-.projects-cta { display: flex; justify-content: center; margin-top: 1.4rem; padding-bottom: 0.6rem; }
+.projects-cta { display: flex; justify-content: center; margin-top: 2rem; }
 .project-card {
   display: flex; flex-direction: column;
   flex: 0 0 420px;

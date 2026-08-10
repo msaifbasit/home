@@ -458,70 +458,46 @@ function initTilt() {
   });
 }
 
-/* ---------- Projects carousel ----------
-   On a wide desktop viewport, the track's horizontal position is driven
-   by how far the section has scrolled through the page — scroll down,
-   the cards drift left. On narrow screens, touch devices and whenever
-   reduced motion is requested, this never runs: the viewport falls back
-   to its base CSS, a plain swipeable/scrollable strip with scroll-snap,
-   so every card stays reachable by touch, trackpad or keyboard without
-   depending on page-scroll position. */
+/* ---------- Projects auto-marquee ----------
+   Cards loop continuously right-to-left at a calm reading pace.
+   The track is duplicated so the reset is seamless: when the
+   translate reaches the start of the clone set, the CSS animation
+   wraps back to 0 and the clone is indistinguishable from the
+   original. Pauses on hover so users can read a card.
+   Falls back to native horizontal scroll for reduced-motion. */
 function initProjectsCarousel() {
-  const pinWrap = $("#projects-pin-wrap");
-  const sticky = $("#projects-sticky");
   const viewport = $("#projects-viewport");
   const track = $("#projects-track");
-  if (!pinWrap || !sticky || !viewport || !track) return;
-  // Motion-only gate — this runs on every viewport width, phones included,
-  // since the pin-and-drive behaviour is requested there too. A coarse
-  // pointer scrolls the wrapper's extra height by touch exactly the same
-  // way a fine pointer scrolls it by wheel; nothing here assumes a mouse.
+  if (!viewport || !track) return;
   if (prefersReducedMotion) return;
 
-  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-  viewport.style.overflowX = "hidden"; // JS drives position now, not native scroll
+  const origCards = Array.from(track.children);
+  origCards.forEach(card => {
+    const clone = card.cloneNode(true);
+    clone.setAttribute("aria-hidden", "true");
+    track.appendChild(clone);
+  });
 
-  // How much slower than 1:1 the reveal feels: >1 asks for more scroll
-  // distance than the raw pixel shift, so cards don't fly past in a
-  // single flick. 1.15 is a light touch, not a heavy scroll-jack.
-  const PACE = 1.15;
-  let maxShift = 0, scrollDistance = 0, lastWrapH = -1;
+  viewport.style.overflowX = "hidden";
 
-  function navH() {
-    const v = getComputedStyle(document.documentElement).getPropertyValue("--nav-h");
-    return parseFloat(v) || 68;
+  const SPEED = 55; // px per second
+
+  function setup() {
+    const firstClone = track.children[origCards.length];
+    if (!firstClone) return;
+    const dist = firstClone.offsetLeft;
+    if (dist <= 0) return;
+    track.style.setProperty("--mq-end", `-${dist}px`);
+    track.style.setProperty("--mq-dur", `${(dist / SPEED).toFixed(1)}s`);
+    track.classList.add("marquee-running");
   }
 
-  function layout() {
-    maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
-    scrollDistance = maxShift * PACE;
-    // Total room the wrapper needs: the sticky panel's own height (so it
-    // has fully entered view before pinning starts) plus the extra scroll
-    // distance the horizontal reveal consumes while pinned. A real height
-    // on the wrapper, not padding — see the CSS comment above
-    // .projects-pin-wrap for why that distinction matters here.
-    const wrapH = Math.round(sticky.offsetHeight + scrollDistance);
-    if (wrapH !== lastWrapH) {
-      pinWrap.style.height = wrapH + "px";
-      lastWrapH = wrapH;
-    }
-  }
+  requestAnimationFrame(() => requestAnimationFrame(setup));
 
-  function frame() {
-    layout();
-    if (scrollDistance > 0) {
-      const r = pinWrap.getBoundingClientRect();
-      // 0 the instant the sticky panel reaches its pinned position (its
-      // top sits at navH — nothing above it moves further), 1 once
-      // scrollDistance more px have passed and it is about to release.
-      // Reading this every frame is what makes the effect reverse
-      // cleanly on the way back up: it is a position, not a one-shot.
-      const progress = clamp((navH() - r.top) / scrollDistance, 0, 1);
-      track.style.transform = `translate3d(${(-progress * maxShift).toFixed(1)}px,0,0)`;
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+  window.addEventListener("resize", () => {
+    track.classList.remove("marquee-running");
+    requestAnimationFrame(() => requestAnimationFrame(setup));
+  }, { passive: true });
 }
 
 /* ---------- Custom cursor: "Liquid Blob" ----------
