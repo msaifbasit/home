@@ -515,6 +515,17 @@ body {
    reduced motion. On a wide desktop viewport, initProjectsCarousel()
    in main.js sets overflow-x:hidden here and drives .projects-track's
    transform from page-scroll position instead. */
+/* The pin wrapper is given real height (a sibling's, or in this case its
+   own, set directly) by initProjectsCarousel() in main.js — enough that
+   #projects-sticky, pinned via position:sticky, stays on screen for
+   exactly that much extra scroll. padding-bottom cannot stand in for
+   this: verified while building the Publications "Sticky Stack" option
+   that padding on a sticky item's containing block gives it no room to
+   stick within in this Chromium build, so the sticky item never clamps —
+   it just tracks scroll 1:1. A real height is required. */
+.projects-pin-wrap { position: relative; }
+.projects-sticky { position: sticky; top: var(--nav-h); }
+
 .projects-viewport {
   overflow-x: auto;
   overflow-y: hidden;

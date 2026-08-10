@@ -455,22 +455,56 @@ function initTilt() {
    so every card stays reachable by touch, trackpad or keyboard without
    depending on page-scroll position. */
 function initProjectsCarousel() {
+  const pinWrap = $("#projects-pin-wrap");
+  const sticky = $("#projects-sticky");
   const viewport = $("#projects-viewport");
   const track = $("#projects-track");
-  if (!viewport || !track) return;
-  if (prefersReducedMotion || !window.matchMedia("(min-width: 860px)").matches) return;
+  if (!pinWrap || !sticky || !viewport || !track) return;
+  // Motion-only gate — this runs on every viewport width, phones included,
+  // since the pin-and-drive behaviour is requested there too. A coarse
+  // pointer scrolls the wrapper's extra height by touch exactly the same
+  // way a fine pointer scrolls it by wheel; nothing here assumes a mouse.
+  if (prefersReducedMotion) return;
 
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   viewport.style.overflowX = "hidden"; // JS drives position now, not native scroll
 
+  // How much slower than 1:1 the reveal feels: >1 asks for more scroll
+  // distance than the raw pixel shift, so cards don't fly past in a
+  // single flick. 1.15 is a light touch, not a heavy scroll-jack.
+  const PACE = 1.15;
+  let maxShift = 0, scrollDistance = 0, lastWrapH = -1;
+
+  function navH() {
+    const v = getComputedStyle(document.documentElement).getPropertyValue("--nav-h");
+    return parseFloat(v) || 68;
+  }
+
+  function layout() {
+    maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
+    scrollDistance = maxShift * PACE;
+    // Total room the wrapper needs: the sticky panel's own height (so it
+    // has fully entered view before pinning starts) plus the extra scroll
+    // distance the horizontal reveal consumes while pinned. A real height
+    // on the wrapper, not padding — see the CSS comment above
+    // .projects-pin-wrap for why that distinction matters here.
+    const wrapH = Math.round(sticky.offsetHeight + scrollDistance);
+    if (wrapH !== lastWrapH) {
+      pinWrap.style.height = wrapH + "px";
+      lastWrapH = wrapH;
+    }
+  }
+
   function frame() {
-    const maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
-    if (maxShift > 0) {
-      const r = viewport.getBoundingClientRect();
-      // 0 while the viewport is still below the screen, 1 once it has
-      // scrolled fully past the top — recomputed every frame, so a
-      // resize is picked up for free without a separate listener.
-      const progress = clamp((window.innerHeight - r.top) / (r.height + window.innerHeight), 0, 1);
+    layout();
+    if (scrollDistance > 0) {
+      const r = pinWrap.getBoundingClientRect();
+      // 0 the instant the sticky panel reaches its pinned position (its
+      // top sits at navH — nothing above it moves further), 1 once
+      // scrollDistance more px have passed and it is about to release.
+      // Reading this every frame is what makes the effect reverse
+      // cleanly on the way back up: it is a position, not a one-shot.
+      const progress = clamp((navH() - r.top) / scrollDistance, 0, 1);
       track.style.transform = `translate3d(${(-progress * maxShift).toFixed(1)}px,0,0)`;
     }
     requestAnimationFrame(frame);

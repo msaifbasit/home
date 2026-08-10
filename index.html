@@ -9,7 +9,7 @@
   <meta property="og:description" content="Interactive 3D portfolio: AI/ML, Data Science, NLP and Computer Vision projects." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="assets/profile.png" />
-  <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="icon" href="assets/favicon.svg?v=3" type="image/svg+xml" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -223,15 +223,29 @@
 
     <!-- ============ PROJECTS ============ -->
     <section id="projects" class="section">
-      <div class="container">
-        <h2 class="section-title reveal"><span class="mono section-index">03.</span> <span id="projects-heading">Projects</span></h2>
-      </div>
-      <!-- Full-bleed, not inside .container: the track has to extend past
-           the readable column width for there to be anything to scroll
-           through. js/main.js drives its horizontal position on desktop;
-           see initProjectsCarousel. -->
-      <div class="projects-viewport reveal" id="projects-viewport">
-        <div class="projects-track" id="projects-track"></div>
+      <!-- initProjectsCarousel() (js/main.js) gives #projects-pin-wrap real
+           extra height so #projects-sticky — sticky, top: var(--nav-h) —
+           stays pinned on screen for exactly that much scroll distance.
+           Page scroll visually "pauses" for free the moment something is
+           pinned; no scroll-jacking or preventDefault needed. While pinned,
+           JS reads how far scroll has moved through that extra height and
+           drives #projects-track's transform from it, so the carousel
+           starts moving only once Projects is pinned and finishes exactly
+           when the wrapper's extra height runs out and normal scroll
+           resumes. Scrolling back up reverses the same way, since it's
+           all driven by scroll position, not a one-shot animation. -->
+      <div class="projects-pin-wrap" id="projects-pin-wrap">
+        <div class="projects-sticky" id="projects-sticky">
+          <div class="container">
+            <h2 class="section-title reveal"><span class="mono section-index">03.</span> <span id="projects-heading">Projects</span></h2>
+          </div>
+          <!-- Full-bleed, not inside .container: the track has to extend
+               past the readable column width for there to be anything to
+               scroll through. -->
+          <div class="projects-viewport reveal" id="projects-viewport">
+            <div class="projects-track" id="projects-track"></div>
+          </div>
+        </div>
       </div>
       <div class="container">
         <div class="projects-cta">
