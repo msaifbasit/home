@@ -54,6 +54,35 @@ const CONFIG = {
     ],
   },
 
+  /* ---------- Content creator (sub-section at the end of About) ----------
+     The video is picked automatically: the GitHub Pages deploy runs
+     scripts/fetch-youtube.mjs every day, finds the most-viewed upload on
+     the channel and writes assets/youtube.json. Nothing to update here
+     when a new video takes the top spot.
+
+     Wrap words in [[double brackets]] to give them the amber highlight.
+     channelId is optional (the deploy resolves it from the handle); set
+     it only if you want the in-browser fallback to work before the first
+     deploy. fallbackVideoId is shown if the automatic pick isn't there. */
+  creator: {
+    enabled: true,
+    eyebrow: "// also on camera",
+    title: "AI, data & tech news, explained in [[under 30 seconds]].",
+    paragraphs: [
+      "Off the clock, I make content as **Saif Made Simple**. I like sharing what I know, so I turn the noise of the AI world into quick, clear shorts: what just launched, what it actually means and why it matters, all explained in [[under 30 seconds]].",
+      "The goal is simple: keep you updated, spread education and make tech feel a little less intimidating, with PC life hacks, tips and tricks along the way.",
+    ],
+    topics: ["AI", "Data", "Tech News", "Education", "PC Life Hacks", "Tips & Tricks"],
+    youtube: {
+      handle: "SaifMadeSimple",
+      channelId: "",
+      fallbackVideoId: "",
+    },
+    subscribeLabel: "Drop a Subscribe",
+    // Icon links shown beside the Subscribe button (keys from `socials`)
+    platforms: ["facebook", "instagram"],
+  },
+
   /* ---------- Skills ----------
      Technical skills are grouped into cards. Add / remove a group or
      an item and the layout reflows automatically.
@@ -285,6 +314,7 @@ const CONFIG = {
       "Tell me about the IEEE paper",
       "Is he AWS certified?",
       "How do I contact him?",
+      "Does he make content?",
     ],
     apiUrl: "",                        // e.g. "https://msb-chat.<you>.workers.dev"
     model: "llama-3.3-70b-versatile",  // only used when apiUrl is set
@@ -343,6 +373,8 @@ const CONFIG = {
       "He builds BI and KPI dashboards in Power BI, Tableau and Looker Studio, and works in SQL, DAX and Excel alongside Python.",
       "He has built agentic AI systems, including a self-hosted 24/7 Telegram bot that discovers and analyses AI tools using Ollama and the Tavily API, with no paid LLM API dependency.",
       "He writes about data and AI on Medium.",
+      "He is also a content creator: as Saif Made Simple he makes short videos on AI, data, tech news, education, PC life hacks, and tips and tricks, each explained in under 30 seconds.",
+      "He makes content because he likes sharing his knowledge, keeping people updated on what is happening in the AI world and spreading education.",
     ],
   },
 
@@ -356,11 +388,13 @@ const CONFIG = {
 
   /* ---------- Social links ----------
      Supported icons: github, linkedin, scholar, medium, twitter,
-     facebook, instagram, email. Remove a line to hide it.       */
+     facebook, instagram, youtube, email. Remove a line to hide it. */
   socials: [
     { icon: "github",    url: "https://github.com/msaifbasit" },
     { icon: "linkedin",  url: "https://www.linkedin.com/in/muhammad-saif-basit/" },
     { icon: "scholar",   url: "https://scholar.google.com/citations?user=Mh0PcvEAAAAJ&hl=en&authuser=1" },
+    { icon: "youtube",   url: "https://www.youtube.com/@SaifMadeSimple" },
+    { icon: "facebook",  url: "https://www.facebook.com/saifmadesimple" },
     { icon: "instagram", url: "https://www.instagram.com/saifmadesimple/" },
   ],
 

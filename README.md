@@ -31,8 +31,11 @@ Common edits:
 ├── config.js             # ✏️ ALL content lives here
 ├── css/style.css         # theme, layout, animations
 ├── js/main.js            # renders config.js into the page + interactions
+├── js/creator.js         # About > content-creator card + YouTube player
+├── js/chatbot.js         # "Ask about me" assistant
 ├── js/bg-scene.js        # dependency-free WebGL particle background
 ├── js/scene-worker.js    # runs the background in a Web Worker
+├── scripts/fetch-youtube.mjs  # picks the most-viewed YouTube video at deploy
 ├── assets/               # profile photo, favicon
 └── .github/workflows/    # auto-deploy to GitHub Pages
 ```
@@ -55,6 +58,18 @@ the repo to **GitHub Pages** at `https://msaifbasit.github.io/portfolio/`.
 
 If the first run fails, enable Pages once by hand: repo **Settings → Pages →
 Source: GitHub Actions**, then re-run the workflow.
+
+### The YouTube video in About
+
+The deploy also runs once a day. Each run, `scripts/fetch-youtube.mjs` finds
+the most-viewed video on the channel set in `config.js → creator.youtube` and
+writes `assets/youtube.json`, so the card picks up a new top video by itself.
+
+It works with no setup, using YouTube's public feeds. For an exact pick
+across every upload, add a YouTube Data API key as a repo secret named
+`YT_API_KEY` (**Settings → Secrets and variables → Actions**). The key stays
+in GitHub and is never sent to the browser. To refresh right away, run the
+workflow from the **Actions** tab.
 
 ### Want a nicer / custom domain later?
 

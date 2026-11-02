@@ -110,6 +110,14 @@ function buildKB(CONFIG) {
 
   (chat.facts || []).forEach((f, i) => add("fact", "Fact " + i, f, () => f));
 
+  const cr = CONFIG.creator;
+  if (cr && cr.enabled !== false) {
+    const plain = (s) => String(s || "").replace(/\*\*|\[\[|\]\]/g, "");
+    add("creator", "Content creator", [plain(cr.title), ...(cr.paragraphs || []).map(plain), (cr.topics || []).join(" "),
+        "youtube channel shorts videos content creator facebook instagram social media"].join(" "),
+      () => plain(cr.paragraphs?.[0] || cr.title));
+  }
+
   return { id, full, chat, docs, CONFIG };
 }
 
@@ -177,6 +185,24 @@ function makeEngine(kb) {
 
     if (/\b(who are you|what are you|are you (a )?(bot|ai|human|real))\b/.test(q))
       return `I'm a small assistant that knows ${full}'s professional profile. Not him — he's better company, and he sleeps.`;
+
+    /* Content creation: YouTube / Facebook / Instagram, Shorts, topics */
+    if (/\b(youtube|yt|channel|content|creator|videos?|shorts?|reels?|vlogs?|facebook|fb|instagram|insta|ig|social media|socials?|subscribe|subscribers?|followers?|influencer|made simple|life ?hacks?|tips|tricks|tutorials?)\b/.test(q)) {
+      const cr = CONFIG.creator || {};
+      const url = (k) => (CONFIG.socials || []).find((s) => s.icon === k)?.url;
+      const NAMES = { youtube: "YouTube", facebook: "Facebook", instagram: "Instagram", github: "GitHub", linkedin: "LinkedIn", scholar: "Google Scholar", medium: "Medium", twitter: "X" };
+      // "his socials" wants every profile; anything else, just the creator channels
+      const keys = /\bsocials?\b|social media/.test(q)
+        ? (CONFIG.socials || []).map((s) => s.icon)
+        : ["youtube", "facebook", "instagram"];
+      const where = keys.filter((k) => url(k)).map((k) => `[${NAMES[k] || k}](${url(k)})`).join(" · ");
+      if (/\bsocials?\b|social media|\blinks?\b/.test(q) && !/\b(content|creator|videos?|shorts?|make|makes)\b/.test(q))
+        return `You'll find him here: ${where}.\n\nOn YouTube, Facebook and Instagram he posts as **Saif Made Simple**: AI, data and tech news explained in **under 30 seconds**.`;
+      const topics = (cr.topics || ["AI", "Data", "Tech News", "Education", "PC Life Hacks", "Tips & Tricks"]).join(", ");
+      return `Yes, he's a content creator too. As **Saif Made Simple** he makes short videos on ${topics}, each one explained in **under 30 seconds**. ` +
+             "He does it because he likes sharing what he knows, keeping people updated on what's happening in the AI world and spreading education." +
+             (where ? `\n\nFind him on ${where}. His most-viewed video is playing in the About section, and a subscribe is always appreciated.` : "");
+    }
 
     /* Only the genuinely open-ended "who is he" — "tell me about his CV work"
        has a subject and must fall through to the topic branches below. */

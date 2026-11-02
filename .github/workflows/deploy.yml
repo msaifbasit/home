@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Daily rebuild so the About > creator card always shows the channel's
+  # current most-viewed video (see scripts/fetch-youtube.mjs)
+  schedule:
+    - cron: "37 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -22,9 +26,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
+      - id: pages
+        uses: actions/configure-pages@v5
         with:
           enablement: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Writes assets/youtube.json. Optional repo secret YT_API_KEY makes
+      # the pick exact across every upload; without it the keyless feeds
+      # are used. Never fails the deploy: on any error the last good
+      # file from the live site is kept.
+      - name: Pick most-viewed YouTube video
+        continue-on-error: true
+        run: node scripts/fetch-youtube.mjs
+        env:
+          YT_API_KEY: ${{ secrets.YT_API_KEY }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
