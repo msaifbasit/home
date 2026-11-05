@@ -53,3 +53,19 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # GitHub pauses scheduled workflows in a repo with no commits for 60
+  # days. Re-enabling the workflow through the API resets that timer, so
+  # the daily refresh keeps running forever without any filler commits.
+  keepalive:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Keep the daily schedule alive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy.yml/enable"
+          echo "Schedule timer reset."
