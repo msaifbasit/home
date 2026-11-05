@@ -577,7 +577,7 @@ mark.hl::after {
   pointer-events: none;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 20%, transparent 72%, rgba(0, 0, 0, 0.55));
 }
-.yt-badge, .yt-views {
+.yt-badge {
   position: absolute; top: 12px;
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.28rem 0.62rem;
@@ -591,10 +591,6 @@ mark.hl::after {
   pointer-events: none;
 }
 .yt-badge { left: 12px; color: var(--accent); border: 1px solid rgb(var(--accent-rgb) / 0.45); }
-.yt-views { right: 12px; color: var(--text); border: 1px solid rgb(255 255 255 / 0.16); }
-.yt-views[hidden] { display: none; }
-.yt-views svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
-.yt-views b { font-weight: 500; letter-spacing: 0.02em; }
 .yt-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--accent);

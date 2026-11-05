@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
   # Daily rebuild so the About > creator card always shows the channel's
-  # current most-viewed video (see scripts/fetch-youtube.mjs)
+  # current most-viewed video (see scripts/fetch-youtube.mjs).
+  # GitHub only runs schedules from the repo's DEFAULT branch, so the
+  # default branch must be main (Settings > General > Default branch).
   schedule:
     - cron: "37 4 * * *"
   workflow_dispatch:
@@ -25,7 +27,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Always publish main, whichever branch the run was started from
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - id: pages
         uses: actions/configure-pages@v5
         with:

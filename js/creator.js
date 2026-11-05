@@ -19,7 +19,6 @@ const ICONS = {
   muted: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m23 9-6 6M17 9l6 6"/></svg>',
   sound: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>',
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5L7 4.5Z"/></svg>',
-  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
   ext: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>',
 };
 
@@ -37,9 +36,6 @@ function rich(s) {
 function stopwatch() {
   return '<span class="sw" aria-hidden="true"><svg viewBox="0 0 20 20"><circle class="sw-track" cx="10" cy="11" r="7"/><circle class="sw-run" cx="10" cy="11" r="7" pathLength="100"/><path class="sw-crown" d="M8.5 2.5h3M10 2.5V4"/></svg></span>';
 }
-
-const compact = (n) =>
-  new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: n >= 1e4 ? 0 : 1 }).format(n);
 
 /* ---------- Subscribe: app on phones, web on desktop ---------- */
 function subscribeLinks(handle) {
@@ -182,7 +178,6 @@ export function initCreator(CONFIG, { socialIcons = {}, reduceMotion = false } =
         <div class="yt-poster" aria-hidden="true"></div>
         <div class="yt-shade" aria-hidden="true"></div>
         <span class="yt-badge mono"><i class="yt-dot"></i>Most viewed</span>
-        <span class="yt-views mono" hidden>${ICONS.eye}<b>0</b></span>
         <button type="button" class="yt-play" aria-label="Play video">${ICONS.play}</button>
         <button type="button" class="yt-mute" aria-pressed="false" aria-label="Unmute video">${ICONS.muted}</button>
         <div class="yt-progress" aria-hidden="true"><i></i></div>
@@ -219,10 +214,6 @@ function setupMedia(root, frame, video, reduceMotion) {
   title.textContent = video.title || "";
   root.querySelector(".yt-watch").href = video.url;
 
-  // View count rolls up from zero the first time the card is seen
-  const viewsEl = frame.querySelector(".yt-views");
-  if (typeof video.views === "number" && video.views > 0) viewsEl.hidden = false;
-
   let player = null;
   const muteBtn = frame.querySelector(".yt-mute");
   const playBtn = frame.querySelector(".yt-play");
@@ -258,11 +249,9 @@ function setupMedia(root, frame, video, reduceMotion) {
   frame.addEventListener("click", toggle);
   playBtn.addEventListener("click", toggle);
 
-  let counted = false;
   const io = new IntersectionObserver((entries) => {
     for (const en of entries) {
       if (en.isIntersecting) {
-        if (!counted && !viewsEl.hidden) { counted = true; countUp(viewsEl.querySelector("b"), video.views, reduceMotion); }
         if (!reduceMotion) {
           if (!player) start();
           else if (!frame.classList.contains("user-paused")) player.play();
@@ -284,16 +273,4 @@ function setupMedia(root, frame, video, reduceMotion) {
 function isOnScreen(el) {
   const r = el.getBoundingClientRect();
   return r.bottom > 0 && r.top < window.innerHeight;
-}
-
-function countUp(el, target, reduceMotion) {
-  if (reduceMotion) { el.textContent = compact(target); return; }
-  const t0 = performance.now(), dur = 1400;
-  const step = (t) => {
-    const k = Math.min(1, (t - t0) / dur);
-    const eased = 1 - Math.pow(1 - k, 3);
-    el.textContent = compact(Math.round(target * eased));
-    if (k < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
 }

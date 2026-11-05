@@ -71,6 +71,10 @@ across every upload, add a YouTube Data API key as a repo secret named
 in GitHub and is never sent to the browser. To refresh right away, run the
 workflow from the **Actions** tab.
 
+> GitHub only runs scheduled workflows from the repo's **default branch**,
+> so it must be `main` (**Settings → General → Default branch**), or the
+> daily refresh never fires.
+
 ### Want a nicer / custom domain later?
 
 - **Free subdomain:** import this repo at [vercel.com](https://vercel.com) or
