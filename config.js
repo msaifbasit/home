@@ -56,9 +56,10 @@ const CONFIG = {
 
   /* ---------- Content creator (sub-section at the end of About) ----------
      The video is picked automatically: the GitHub Pages deploy runs
-     scripts/fetch-youtube.mjs every day, finds the most-viewed upload on
-     the channel and writes assets/youtube.json. Nothing to update here
-     when a new video takes the top spot.
+     scripts/fetch-youtube.mjs every day and writes assets/youtube.json.
+     youtube.pick chooses which video: "latest" (your newest upload) or
+     "mostViewed" (your all-time most-viewed). Nothing to update here
+     when you post something new.
 
      Wrap words in [[double brackets]] to give them the amber highlight.
      channelId is optional (the deploy resolves it from the handle); set
@@ -67,14 +68,15 @@ const CONFIG = {
   creator: {
     enabled: true,
     eyebrow: "// also on camera",
-    title: "AI, data & tech news, explained in [[under 30 seconds]].",
+    title: "AI, data & tech news, explained in [[under 60 seconds]].",
     paragraphs: [
-      "Off the clock, I make content as **Saif Made Simple**. I like sharing what I know, so I turn the noise of the AI world into quick, clear shorts: what just launched, what it actually means and why it matters, all explained in [[under 30 seconds]].",
+      "Off the clock, I make content as **Saif Made Simple**. I like sharing what I know, so I turn the noise of the AI world into quick, clear shorts: what just launched, what it actually means and why it matters, all explained in [[under 60 seconds]].",
       "The goal is simple: keep you updated, spread education and make tech feel a little less intimidating, with PC life hacks, tips and tricks along the way.",
     ],
     topics: ["AI", "Data", "Tech News", "Education", "PC Life Hacks", "Tips & Tricks"],
     youtube: {
       handle: "SaifMadeSimple",
+      pick: "latest",           // "latest" or "mostViewed"
       channelId: "",
       fallbackVideoId: "",
     },
@@ -373,7 +375,7 @@ const CONFIG = {
       "He builds BI and KPI dashboards in Power BI, Tableau and Looker Studio, and works in SQL, DAX and Excel alongside Python.",
       "He has built agentic AI systems, including a self-hosted 24/7 Telegram bot that discovers and analyses AI tools using Ollama and the Tavily API, with no paid LLM API dependency.",
       "He writes about data and AI on Medium.",
-      "He is also a content creator: as Saif Made Simple he makes short videos on AI, data, tech news, education, PC life hacks, and tips and tricks, each explained in under 30 seconds.",
+      "He is also a content creator: as Saif Made Simple he makes short videos on AI, data, tech news, education, PC life hacks, and tips and tricks, each explained in under 60 seconds.",
       "He makes content because he likes sharing his knowledge, keeping people updated on what is happening in the AI world and spreading education.",
     ],
   },

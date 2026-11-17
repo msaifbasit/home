@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 /* ============================================================
-   fetch-youtube.mjs — finds the channel's most-viewed upload
-   and writes assets/youtube.json for the About > creator card.
+   fetch-youtube.mjs — picks the video for the About > creator
+   card and writes assets/youtube.json.
+
+   Which video: config.js → creator.youtube.pick
+     "latest"      the newest upload (default)
+     "mostViewed"  the all-time most-viewed upload
 
    Runs inside the GitHub Pages deploy (daily + on every push), so
-   the site always shows the current top video without anyone
-   editing anything. No dependencies, Node 18+.
+   the site always shows the right video without anyone editing
+   anything. No dependencies, Node 18+.
 
    Two sources, best first:
    1. YouTube Data API v3, if a YT_API_KEY repo secret exists.
@@ -45,7 +49,21 @@ async function settings() {
     channelId: process.env.YT_CHANNEL_ID || pick(block, /channelId:\s*"(UC[\w-]{22})"/),
     apiKey: process.env.YT_API_KEY || "",
     siteUrl: (process.env.SITE_URL || "").replace(/\/$/, ""),
+    // "latest" = newest upload, "mostViewed" = all-time most-viewed
+    pick: /^most/i.test(process.env.YT_PICK || pick(block, /pick:\s*"([^"]+)"/)) ? "mostViewed" : "latest",
   };
+}
+
+/* ---------- which video to feature ----------
+   latest: newest publish date. Videos read only from the channel tabs
+   carry no date, so as a last resort the first (newest) entry of the
+   Shorts tab wins, then the first of the Videos tab. */
+function choose(all, pick) {
+  if (pick === "mostViewed") return [...all].sort((a, b) => (b.views || 0) - (a.views || 0))[0];
+  const dated = all.filter((v) => v.publishedAt).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  if (dated.length) return dated[0];
+  const byTab = (t) => all.filter((v) => v.tab === t).sort((a, b) => a.rank - b.rank)[0];
+  return byTab("shorts") || byTab("videos") || all[0];
 }
 
 async function get(url, opts = {}) {
@@ -81,7 +99,7 @@ async function isShort(id) {
 }
 
 /* ---------- source 1: Data API ---------- */
-async function viaApi({ apiKey, channelId, handle }) {
+async function viaApi({ apiKey, channelId, handle, pick }) {
   const api = (path, params) =>
     get(`https://www.googleapis.com/youtube/v3/${path}?${new URLSearchParams({ ...params, key: apiKey })}`)
       .then(async (r) => { if (!r.ok) throw new Error(`${path} ${r.status} ${await r.text()}`); return r.json(); });
@@ -102,14 +120,16 @@ async function viaApi({ apiKey, channelId, handle }) {
     pageToken = page.nextPageToken || "";
   } while (pageToken && ids.length < 2000);
 
-  let best = null;
+  const all = [];
   for (let i = 0; i < ids.length; i += 50) {
     const vids = await api("videos", { part: "snippet,statistics,contentDetails", id: ids.slice(i, i + 50).join(",") });
     for (const v of vids.items) {
-      const views = Number(v.statistics.viewCount || 0);
-      if (!best || views > best.views) best = { id: v.id, title: v.snippet.title, views, publishedAt: v.snippet.publishedAt, duration: v.contentDetails.duration };
+      if (v.snippet.liveBroadcastContent === "upcoming") continue;   // scheduled premieres aren't watchable yet
+      all.push({ id: v.id, title: v.snippet.title, views: Number(v.statistics.viewCount || 0),
+                 publishedAt: v.snippet.publishedAt, duration: v.contentDetails.duration });
     }
   }
+  const best = choose(all, pick);
   if (!best) throw new Error("channel has no public uploads");
 
   const subs = channel.statistics.hiddenSubscriberCount ? null : Number(channel.statistics.subscriberCount || 0);
@@ -167,6 +187,8 @@ async function viaTabs({ handle }) {
     let data = null;
     try { data = json && JSON.parse(json); } catch {}
     const before = out.length;
+    // remember which tab each video came from and its position on it (newest first)
+    const add = (v) => out.push({ ...v, tab, rank: out.length - before });
     if (data) walk(data, (n) => {
       if (n.shortsLockupViewModel) {
         const v = n.shortsLockupViewModel;
@@ -174,18 +196,18 @@ async function viaTabs({ handle }) {
                    (String(v.entityId || "").match(/([\w-]{11})$/) || [])[1];
         const title = v.overlayMetadata?.primaryText?.content || v.accessibilityText || "";
         const views = v.overlayMetadata?.secondaryText?.content || findString(v, (s) => VIEWS_RE.test(s));
-        if (id) out.push({ id, title, views: parseViews(views), tag: "short" });
+        if (id) add({ id, title, views: parseViews(views), tag: "short" });
       } else if (n.reelItemRenderer) {
         const v = n.reelItemRenderer;
-        out.push({ id: v.videoId, title: v.headline?.simpleText || "", views: parseViews(v.viewCountText?.simpleText), tag: "short" });
+        add({ id: v.videoId, title: v.headline?.simpleText || "", views: parseViews(v.viewCountText?.simpleText), tag: "short" });
       } else if (n.videoRenderer) {
         const v = n.videoRenderer;
-        out.push({ id: v.videoId, title: v.title?.runs?.[0]?.text || v.title?.simpleText || "",
+        add({ id: v.videoId, title: v.title?.runs?.[0]?.text || v.title?.simpleText || "",
                    views: parseViews(v.viewCountText?.simpleText || v.viewCountText?.runs?.[0]?.text), tag });
       } else if (n.lockupViewModel) {
         const v = n.lockupViewModel;
         if (v.contentId && /^[\w-]{11}$/.test(v.contentId)) {
-          out.push({ id: v.contentId, title: v.metadata?.lockupMetadataViewModel?.title?.content || "",
+          add({ id: v.contentId, title: v.metadata?.lockupMetadataViewModel?.title?.content || "",
                      views: parseViews(findString(v, (s) => VIEWS_RE.test(s))), tag });
         }
       }
@@ -195,7 +217,7 @@ async function viaTabs({ handle }) {
   return out.filter((v) => v.id);
 }
 
-async function viaFeeds({ channelId, handle }) {
+async function viaFeeds({ channelId, handle, pick }) {
   const lists = [];
   if (channelId) {
     const tail = channelId.slice(2);
@@ -219,12 +241,16 @@ async function viaFeeds({ channelId, handle }) {
       views: Math.max(v.views || 0, prev?.views || 0),
       title: v.title || prev?.title || "",
       tag: v.tag === "short" || prev?.tag === "short" ? "short" : v.tag,
+      tab: prev?.tab || v.tab,
+      rank: prev?.rank ?? v.rank,
     });
   }
-  const all = [...byId.values()].sort((a, b) => b.views - a.views);
+  const all = [...byId.values()];
   if (!all.length) throw new Error("no videos found in feeds or channel tabs");
-  log(`candidates: ${all.length}; top 3: ${all.slice(0, 3).map((v) => `${v.id}=${v.views}`).join(", ")}`);
-  return { ...all[0], channelId, subscribers: null, source: "public" };
+  const newest = all.filter((v) => v.publishedAt).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  const popular = [...all].sort((a, b) => b.views - a.views);
+  log(`candidates: ${all.length}; newest: ${newest.slice(0, 3).map((v) => `${v.id} (${v.publishedAt.slice(0, 10)})`).join(", ") || "no dates"}; most viewed: ${popular.slice(0, 3).map((v) => `${v.id}=${v.views}`).join(", ")}`);
+  return { ...choose(all, pick), channelId, subscribers: null, source: "public" };
 }
 
 /* ---------- last good file ---------- */
@@ -241,7 +267,7 @@ async function lastGood(siteUrl) {
 
 /* ---------- main ---------- */
 const s = await settings();
-log("handle:", s.handle || "(none)", "| channelId:", s.channelId || "(resolve)", "| api key:", s.apiKey ? "yes" : "no");
+log("handle:", s.handle || "(none)", "| channelId:", s.channelId || "(resolve)", "| api key:", s.apiKey ? "yes" : "no", "| pick:", s.pick);
 
 let top = null;
 try {
@@ -265,6 +291,7 @@ if (top) {
   if (short === null) short = top.tag ? top.tag === "short" : /^PT(\d+S|[0-2]M(\d+S)?|3M0?S?)$/.test(top.duration || "");
   const data = {
     id: top.id,
+    pick: s.pick,
     title: top.title,
     views: top.views,
     publishedAt: top.publishedAt || null,
@@ -279,7 +306,7 @@ if (top) {
   };
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, JSON.stringify(data, null, 2) + "\n");
-  log(`top video: ${data.id} (${data.views} views, ${data.isShort ? "short" : "landscape"}) via ${data.source}`);
+  log(`featured (${s.pick}): ${data.id} "${data.title}" (${data.views} views, ${data.publishedAt ? data.publishedAt.slice(0, 10) : "no date"}, ${data.isShort ? "short" : "landscape"}) via ${data.source}`);
 } else {
   const prev = await lastGood(s.siteUrl);
   if (prev) {

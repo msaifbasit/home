@@ -35,7 +35,7 @@ Common edits:
 ├── js/chatbot.js         # "Ask about me" assistant
 ├── js/bg-scene.js        # dependency-free WebGL particle background
 ├── js/scene-worker.js    # runs the background in a Web Worker
-├── scripts/fetch-youtube.mjs  # picks the most-viewed YouTube video at deploy
+├── scripts/fetch-youtube.mjs  # picks the YouTube video for About, daily
 ├── assets/               # profile photo, favicon
 └── .github/workflows/    # auto-deploy to GitHub Pages
 ```
@@ -61,9 +61,11 @@ Source: GitHub Actions**, then re-run the workflow.
 
 ### The YouTube video in About
 
-The deploy also runs once a day. Each run, `scripts/fetch-youtube.mjs` finds
-the most-viewed video on the channel set in `config.js → creator.youtube` and
-writes `assets/youtube.json`, so the card picks up a new top video by itself.
+The deploy also runs once a day. Each run, `scripts/fetch-youtube.mjs` checks
+the channel set in `config.js → creator.youtube` and writes
+`assets/youtube.json`, so the card picks up your newest upload by itself.
+Set `pick: "mostViewed"` there to feature your all-time most-viewed video
+instead.
 
 It works with no setup, using YouTube's public feeds. For an exact pick
 across every upload, add a YouTube Data API key as a repo secret named

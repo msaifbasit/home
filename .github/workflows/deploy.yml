@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   # Daily rebuild so the About > creator card always shows the channel's
-  # current most-viewed video (see scripts/fetch-youtube.mjs).
+  # latest (or most-viewed) video — see creator.youtube.pick in config.js.
   # GitHub only runs schedules from the repo's DEFAULT branch, so the
   # default branch must be main (Settings > General > Default branch).
   schedule:
@@ -42,7 +42,7 @@ jobs:
       # the pick exact across every upload; without it the keyless feeds
       # are used. Never fails the deploy: on any error the last good
       # file from the live site is kept.
-      - name: Pick most-viewed YouTube video
+      - name: Pick YouTube video for the About card
         continue-on-error: true
         run: node scripts/fetch-youtube.mjs
         env:

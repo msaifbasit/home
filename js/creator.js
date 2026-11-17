@@ -2,10 +2,11 @@
    creator.js — About > "also on camera" sub-section
    ------------------------------------------------------------
    Copy, topics and buttons come from CONFIG.creator. The video
-   is whatever scripts/fetch-youtube.mjs picked as the channel's
-   most-viewed upload (assets/youtube.json, refreshed daily by
-   the deploy). The frame takes that video's own shape: 9:16 for
-   a Short, 16:9 for a regular video.
+   is whatever scripts/fetch-youtube.mjs picked (the newest upload
+   or the most-viewed one, per creator.youtube.pick), stored in
+   assets/youtube.json and refreshed daily by the deploy. The
+   frame takes that video's own shape: 9:16 for a Short, 16:9
+   for a regular video.
 
    The player is a plain YouTube embed driven over postMessage,
    so there is no extra API script to load. It is only created
@@ -29,12 +30,15 @@ function rich(s) {
   return esc(s)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\[\[(.+?)\]\]/g, (_, t) =>
-      `<mark class="hl">${/30/.test(t) ? stopwatch() : ""}${t}</mark>`);
+      `<mark class="hl">${stopwatch(t)}${t}</mark>`);
 }
 
-/* A tiny ring that drains over a real 30 seconds, next to "30 seconds" */
-function stopwatch() {
-  return '<span class="sw" aria-hidden="true"><svg viewBox="0 0 20 20"><circle class="sw-track" cx="10" cy="11" r="7"/><circle class="sw-run" cx="10" cy="11" r="7" pathLength="100"/><path class="sw-crown" d="M8.5 2.5h3M10 2.5V4"/></svg></span>';
+/* A tiny ring next to "under 60 seconds" that drains over that many real
+   seconds — the duration is read from the highlighted text itself */
+function stopwatch(text) {
+  const secs = (String(text).match(/(\d+)\s*sec/i) || [])[1];
+  if (!secs) return "";
+  return `<span class="sw" aria-hidden="true" style="--sw-dur:${secs}s"><svg viewBox="0 0 20 20"><circle class="sw-track" cx="10" cy="11" r="7"/><circle class="sw-run" cx="10" cy="11" r="7" pathLength="100"/><path class="sw-crown" d="M8.5 2.5h3M10 2.5V4"/></svg></span>`;
 }
 
 /* ---------- Subscribe: app on phones, web on desktop ---------- */
@@ -61,6 +65,9 @@ function wireSubscribe(btn, handle) {
 }
 
 /* ---------- Which video ---------- */
+const isLatest = (yt) => !/^most/i.test(yt.pick || "latest");
+const badgeText = (latest) => (latest ? "Latest upload" : "Most viewed");
+
 async function loadVideo(yt) {
   try {
     const res = await fetch("assets/youtube.json", { cache: "no-cache" });
@@ -75,9 +82,10 @@ async function loadVideo(yt) {
              url: `https://www.youtube.com/shorts/${yt.fallbackVideoId}` };
   }
   if (/^UC[\w-]{22}$/.test(yt.channelId || "")) {
-    // YouTube's auto-generated "popular shorts" playlist: its first entry
-    // is the most-viewed Short, so this is still the right video.
-    return { list: "UUPS" + yt.channelId.slice(2), isShort: true, aspect: "9 / 16", title: "", views: null,
+    // YouTube's auto-generated playlists: "recent shorts" (UUSH) starts
+    // with the newest Short, "popular shorts" (UUPS) with the most-viewed
+    const prefix = isLatest(yt) ? "UUSH" : "UUPS";
+    return { list: prefix + yt.channelId.slice(2), isShort: true, aspect: "9 / 16", title: "", views: null,
              url: `https://www.youtube.com/@${yt.handle}/shorts` };
   }
   return null;
@@ -95,7 +103,7 @@ function mountPlayer(frame, video) {
   const iframe = document.createElement("iframe");
   iframe.className = "yt-iframe";
   iframe.src = src;
-  iframe.title = video.title ? `YouTube: ${video.title}` : "Most-viewed video on Saif Made Simple";
+  iframe.title = video.title ? `YouTube: ${video.title}` : "Video on Saif Made Simple";
   iframe.allow = "autoplay; encrypted-media; picture-in-picture";
   iframe.referrerPolicy = "strict-origin-when-cross-origin";
   iframe.setAttribute("tabindex", "-1");
@@ -174,10 +182,10 @@ export function initCreator(CONFIG, { socialIcons = {}, reduceMotion = false } =
       </div>
     </div>
     <figure class="creator-media">
-      <div class="yt-frame is-short" id="yt-frame" role="group" aria-label="Most-viewed video">
+      <div class="yt-frame is-short" id="yt-frame" role="group" aria-label="${badgeText(isLatest(yt))} video">
         <div class="yt-poster" aria-hidden="true"></div>
         <div class="yt-shade" aria-hidden="true"></div>
-        <span class="yt-badge mono"><i class="yt-dot"></i>Most viewed</span>
+        <span class="yt-badge mono"><i class="yt-dot"></i><span class="yt-badge-text">${badgeText(isLatest(yt))}</span></span>
         <button type="button" class="yt-play" aria-label="Play video">${ICONS.play}</button>
         <button type="button" class="yt-mute" aria-pressed="false" aria-label="Unmute video">${ICONS.muted}</button>
         <div class="yt-progress" aria-hidden="true"><i></i></div>
@@ -199,6 +207,14 @@ export function initCreator(CONFIG, { socialIcons = {}, reduceMotion = false } =
 }
 
 function setupMedia(root, frame, video, reduceMotion) {
+  // The badge describes the video actually shown (the file records how it
+  // was picked), so it stays right even mid-way through changing `pick`
+  if (video.pick) {
+    const label = badgeText(video.pick !== "mostViewed");
+    frame.querySelector(".yt-badge-text").textContent = label;
+    frame.setAttribute("aria-label", `${label} video`);
+  }
+
   // Shape follows the video
   frame.style.aspectRatio = video.aspect || (video.isShort ? "9 / 16" : "16 / 9");
   frame.classList.toggle("is-short", !!video.isShort);

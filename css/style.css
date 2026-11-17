@@ -453,7 +453,7 @@ body {
 .stat-label { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.3rem; }
 
 /* ---------- About > content creator ----------
-   Copy on the left, the channel's most-viewed video on the right. The
+   Copy on the left, the channel's latest (or most-viewed) video on the right. The
    grid follows the video's shape: a narrow phone-shaped column for a
    Short, a wide one for a landscape video (.is-landscape). */
 .creator {
@@ -485,8 +485,9 @@ body {
 .creator-copy > p { color: var(--text-dim); margin-bottom: 1rem; font-size: 1.02rem; }
 .creator-copy > p strong { color: var(--text); }
 
-/* "under 30 seconds": amber text, a marker stroke that sweeps in when
-   the card is revealed, and a stopwatch that drains over a real 30s */
+/* "under 60 seconds": amber text, a marker stroke that sweeps in when
+   the card is revealed, and a stopwatch that drains over that many real
+   seconds (--sw-dur, set from the text by creator.js) */
 mark.hl {
   position: relative;
   background: none;
@@ -516,7 +517,7 @@ mark.hl::after {
   stroke-dasharray: 100;
   transform: rotate(-90deg);
   transform-origin: 10px 11px;
-  animation: sw-drain 30s linear infinite;
+  animation: sw-drain var(--sw-dur, 60s) linear infinite;
 }
 @keyframes sw-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 100; } }
 
@@ -646,8 +647,9 @@ mark.hl::after {
 
 .yt-caption {
   width: min(300px, 100%);
-  display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem;
+  display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;
 }
+.yt-title { flex: 1; min-width: 0; }
 .creator.is-landscape .yt-caption { width: 100%; }
 .yt-title {
   color: var(--text-dim);
@@ -658,16 +660,49 @@ mark.hl::after {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* Glowing pill so it reads as the obvious next step: a breathing amber
+   halo plus a light sweep across it every few seconds */
 .yt-watch {
+  position: relative;
+  overflow: hidden;
   flex: none;
-  display: inline-flex; align-items: center; gap: 0.3rem;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--accent-rgb) / 0.6);
+  background: rgb(var(--accent-rgb) / 0.12);
   color: var(--accent);
   font-size: 0.76rem;
+  font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
+  text-shadow: 0 0 10px rgb(var(--accent-rgb) / 0.65);
+  box-shadow: 0 0 14px rgb(var(--accent-rgb) / 0.35);
+  animation: watchglow 2.4s ease-in-out infinite;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
-.yt-watch:hover { text-decoration: underline; }
+.yt-watch::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: watchsweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.yt-watch:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-shadow: none;
+  transform: translateY(-2px);
+}
 .yt-watch svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+@keyframes watchglow {
+  50% { box-shadow: 0 0 24px rgb(var(--accent-rgb) / 0.65), inset 0 0 8px rgb(var(--accent-rgb) / 0.25); }
+}
+@keyframes watchsweep {
+  0%, 55% { transform: translateX(-120%); }
+  100%    { transform: translateX(120%); }
+}
 
 /* ---------- Skills ---------- */
 .tech-grid {
@@ -1111,7 +1146,7 @@ body.blob-cursor * { cursor: none; }
   .type-caret, .scroll-hint span { animation: none; }
   .photo-frame, .photo-frame::before { animation: none; }
   .about-photo:hover .photo-frame::after { animation: none; }
-  .sw-run, .btn-sub::after, .yt-dot, .yt-frame { animation: none; }
+  .sw-run, .btn-sub::after, .yt-dot, .yt-frame, .yt-watch, .yt-watch::before { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
 

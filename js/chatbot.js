@@ -196,12 +196,14 @@ function makeEngine(kb) {
         ? (CONFIG.socials || []).map((s) => s.icon)
         : ["youtube", "facebook", "instagram"];
       const where = keys.filter((k) => url(k)).map((k) => `[${NAMES[k] || k}](${url(k)})`).join(" · ");
+      // "under 60 seconds" — read from the site's own headline so the two never disagree
+      const secs = (String(cr.title || "").match(/(\d+)\s*sec/i) || [])[1] || "60";
       if (/\bsocials?\b|social media|\blinks?\b/.test(q) && !/\b(content|creator|videos?|shorts?|make|makes)\b/.test(q))
-        return `You'll find him here: ${where}.\n\nOn YouTube, Facebook and Instagram he posts as **Saif Made Simple**: AI, data and tech news explained in **under 30 seconds**.`;
+        return `You'll find him here: ${where}.\n\nOn YouTube, Facebook and Instagram he posts as **Saif Made Simple**: AI, data and tech news explained in **under ${secs} seconds**.`;
       const topics = (cr.topics || ["AI", "Data", "Tech News", "Education", "PC Life Hacks", "Tips & Tricks"]).join(", ");
-      return `Yes, he's a content creator too. As **Saif Made Simple** he makes short videos on ${topics}, each one explained in **under 30 seconds**. ` +
+      return `Yes, he's a content creator too. As **Saif Made Simple** he makes short videos on ${topics}, each one explained in **under ${secs} seconds**. ` +
              "He does it because he likes sharing what he knows, keeping people updated on what's happening in the AI world and spreading education." +
-             (where ? `\n\nFind him on ${where}. His most-viewed video is playing in the About section, and a subscribe is always appreciated.` : "");
+             (where ? `\n\nFind him on ${where}. His ${/^most/i.test(cr.youtube?.pick || "") ? "most-viewed" : "latest"} video is playing in the About section, and a subscribe is always appreciated.` : "");
     }
 
     /* Only the genuinely open-ended "who is he" — "tell me about his CV work"
