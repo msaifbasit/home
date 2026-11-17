@@ -463,12 +463,52 @@ body {
   gap: clamp(2rem, 5vw, 4.5rem);
   align-items: center;
   padding: clamp(1.6rem, 4vw, 2.8rem) clamp(1.6rem, 5vw, 3.6rem);
-  background: var(--card);
-  border: 1px solid var(--card-border);
+  position: relative;
+  /* faint amber wash from the top so the card reads as lit */
+  background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.07), var(--card) 45%);
+  border: 1px solid rgb(var(--accent-rgb) / 0.45);
   border-top: 3px solid var(--accent);
   border-radius: calc(var(--radius) + 4px);
   isolation: isolate;   /* lets the highlight sit between card and text */
+  /* sharp neon edge: a crisp 1px line, a tight glow, then a wide halo */
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-rgb) / 0.25),
+    0 0 18px rgb(var(--accent-rgb) / 0.28),
+    0 0 60px rgb(var(--accent-rgb) / 0.12);
+  animation: creator-pulse 3.2s ease-in-out infinite;
 }
+@keyframes creator-pulse {
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(var(--accent-rgb) / 0.45),
+      0 0 26px rgb(var(--accent-rgb) / 0.42),
+      0 0 90px rgb(var(--accent-rgb) / 0.18);
+  }
+}
+/* A bright comet of light that runs around the border, forever */
+@property --cr-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.creator::before {
+  content: "";
+  position: absolute;
+  inset: -3px -1px -1px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--cr-angle),
+    transparent 0 68%,
+    rgb(var(--accent-rgb) / 0.6) 80%,
+    #fff1c9 86%,
+    var(--accent) 90%,
+    transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  filter: drop-shadow(0 0 6px var(--accent));
+  animation: cr-spin 5s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes cr-spin { to { --cr-angle: 360deg; } }
 .creator:empty { display: none; }
 .creator.is-landscape { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
 .creator.no-video { grid-template-columns: 1fr; }
@@ -1146,7 +1186,9 @@ body.blob-cursor * { cursor: none; }
   .type-caret, .scroll-hint span { animation: none; }
   .photo-frame, .photo-frame::before { animation: none; }
   .about-photo:hover .photo-frame::after { animation: none; }
-  .sw-run, .btn-sub::after, .yt-dot, .yt-frame, .yt-watch, .yt-watch::before { animation: none; }
+  .sw-run, .btn-sub::after, .yt-dot, .yt-frame, .yt-watch, .yt-watch::before,
+  .creator, .creator::before { animation: none; }
+  .creator::before { display: none; }   /* static glow only, no moving light */
   * { transition-duration: 0.01ms !important; }
 }
 

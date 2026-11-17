@@ -7,9 +7,9 @@
 
 // ?v= is a cache-buster: bump it (here and in index.html) when you change these files
 // so returning visitors get the new version instead of a cached copy.
-import CONFIG from "../config.js?v=20261117";
-import { initChat } from "./chatbot.js?v=20261117";
-import { initCreator } from "./creator.js?v=20261117";
+import CONFIG from "../config.js?v=20261117b";
+import { initChat } from "./chatbot.js?v=20261117b";
+import { initCreator } from "./creator.js?v=20261117b";
 
 const $ = (sel) => document.querySelector(sel);
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
