@@ -66,7 +66,7 @@ function wireSubscribe(btn, handle) {
 
 /* ---------- Which video ---------- */
 const isLatest = (yt) => !/^most/i.test(yt.pick || "latest");
-const badgeText = (latest) => (latest ? "Latest upload" : "Most viewed");
+const badgeText = (latest) => (latest ? "Recently dropped" : "Most viewed");
 
 async function loadVideo(yt) {
   try {
