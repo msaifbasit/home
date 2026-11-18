@@ -7,9 +7,9 @@
 
 // ?v= is a cache-buster: bump it (here and in index.html) when you change these files
 // so returning visitors get the new version instead of a cached copy.
-import CONFIG from "../config.js?v=20261118";
-import { initChat } from "./chatbot.js?v=20261118";
-import { initCreator } from "./creator.js?v=20261118";
+import CONFIG from "../config.js?v=20261118b";
+import { initChat } from "./chatbot.js?v=20261118b";
+import { initCreator } from "./creator.js?v=20261118b";
 
 const $ = (sel) => document.querySelector(sel);
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -351,9 +351,8 @@ async function initResumeChooser(fullName) {
   // ?v= makes returning visitors fetch the new PDF the day it changes
   const pdf = `${CONFIG.resumePdf}?v=${encodeURIComponent(meta.hash || meta.updatedAt || "")}`;
   const fileName = `${fullName.replace(/\s+/g, "-")}-Resume.pdf`;
-  const updated = meta.updatedAt
-    ? new Date(meta.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    : "";
+  const heading = CONFIG.resumeChooser?.heading || "Resume";
+  const subline = CONFIG.resumeChooser?.subline || "";
 
   const modal = document.createElement("div");
   modal.className = "email-modal resume-modal";
@@ -363,8 +362,8 @@ async function initResumeChooser(fullName) {
   modal.innerHTML = `
     <div class="email-card">
       <button class="email-close" aria-label="Close">&#10005;</button>
-      <h3>Resume &#128196;</h3>
-      <p class="resume-updated mono">${updated ? `Last updated ${updated}` : "Always the latest version"}</p>
+      <h3>${heading}</h3>
+      <p class="resume-sub mono">${subline}</p>
       <div class="email-opts">
         <a class="email-opt" href="${pdf}" target="_blank" rel="noopener">
           <span class="opt-ic">&#128065;&#65039;</span>

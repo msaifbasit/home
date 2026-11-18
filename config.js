@@ -41,6 +41,11 @@ const CONFIG = {
   resumeUrl:
     "https://docs.google.com/document/d/1E4XQMZPFP5xhXg-Ajty2ks-39G84mv4m/edit?usp=sharing&ouid=103313520272293022509&rtpof=true&sd=true",
   resumePdf: "resume.pdf",
+  // Text at the top of the chooser that opens when someone clicks Resume
+  resumeChooser: {
+    heading: "Want to hire or work with Saif? 🤝",
+    subline: "Here's everything in one page.",
+  },
 
   /* ---------- About ---------- */
   about: {

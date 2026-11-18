@@ -1053,12 +1053,12 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
   font-size: 0.76rem;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.resume-updated {
+.resume-modal h3 { text-wrap: balance; }
+.resume-sub {
   font-size: 0.82rem;
   color: var(--accent);
   margin-bottom: 1.4rem;
-}
-.email-close {
+}.email-close {
   position: absolute; top: 0.7rem; right: 0.7rem;
   width: 34px; height: 34px;
   display: grid; place-items: center;
