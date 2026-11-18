@@ -163,6 +163,9 @@ function makeEngine(kb) {
   const roles = id.roles || [];
   const email = CONFIG.contact?.email;
   const resume = CONFIG.resumeUrl;
+  // Full URL of the daily-built PDF (the link renderer only allows http/https)
+  const resumePdf = CONFIG.resumePdf && typeof location !== "undefined"
+    ? new URL(CONFIG.resumePdf, location.href).href : "";
 
   const listOf = (kind) => kb.docs.filter((d) => d.kind === kind);
   const joinDocs = (docs) => docs.map((d) => d.render()).join("\n\n");
@@ -230,8 +233,11 @@ function makeEngine(kb) {
     }
 
     if (/\b(resume|cv)\b/.test(q))
-      return resume ? `His full resume is here: [Open the resume](${resume}).`
-                    : "The resume isn't linked on the site right now — email is the fastest route.";
+      return resume
+        ? (resumePdf
+            ? `Here's his resume: [View the PDF](${resumePdf}), or [open the live document](${resume}). Both are always the latest version.`
+            : `His full resume is here: [Open the resume](${resume}).`)
+        : "The resume isn't linked on the site right now — email is the fastest route.";
 
     if (/\b(certification|certified|aws|amazon)\b/.test(q)) {
       const certs = listOf("certification");

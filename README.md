@@ -36,6 +36,7 @@ Common edits:
 ├── js/bg-scene.js        # dependency-free WebGL particle background
 ├── js/scene-worker.js    # runs the background in a Web Worker
 ├── scripts/fetch-youtube.mjs  # picks the YouTube video for About, daily
+├── scripts/fetch-resume.mjs   # builds resume.pdf from the live resume, daily
 ├── assets/               # profile photo, favicon
 └── .github/workflows/    # auto-deploy to GitHub Pages
 ```
@@ -58,6 +59,16 @@ the repo to **GitHub Pages** at `https://msaifbasit.github.io/portfolio/`.
 
 If the first run fails, enable Pages once by hand: repo **Settings → Pages →
 Source: GitHub Actions**, then re-run the workflow.
+
+### The resume PDF
+
+The same daily run turns the live resume (`config.js → resumeUrl`, a file in
+Google Drive) into `/resume.pdf` with `scripts/fetch-resume.mjs`: Google's own
+PDF export first, LibreOffice as a fallback. Keep editing the document as
+usual; the PDF catches up on the next run, or straight away if you run the
+workflow from the **Actions** tab. The document must stay shared as
+**Anyone with the link → Viewer**. The Resume buttons then offer View PDF,
+Download PDF and the live document.
 
 ### The YouTube video in About
 

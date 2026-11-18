@@ -1045,6 +1045,19 @@ a.cert-card:hover .cert-ext svg { stroke: var(--accent); }
 }
 .email-opt:hover { border-color: var(--accent); transform: translateY(-2px); }
 .email-opt .opt-ic { font-size: 1.15rem; line-height: 1; }
+/* Resume chooser reuses the email chooser, plus a sub-line per option */
+.resume-modal .email-opt { text-align: left; }
+.opt-text { display: flex; flex-direction: column; min-width: 0; }
+.opt-text small {
+  color: var(--text-dim);
+  font-size: 0.76rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.resume-updated {
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin-bottom: 1.4rem;
+}
 .email-close {
   position: absolute; top: 0.7rem; right: 0.7rem;
   width: 34px; height: 34px;

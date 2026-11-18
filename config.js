@@ -31,10 +31,16 @@ const CONFIG = {
   },
 
   /* ---------- Resume ----------
-     Live link — update the Google Doc and the site always serves
-     the latest version. Set to "" to hide the resume buttons.   */
+     resumeUrl: the live document. Keep editing it as usual; it must
+       stay shared as "Anyone with the link → Viewer".
+     resumePdf: every day the deploy turns that document into a PDF at
+       this path (scripts/fetch-resume.mjs). The Resume buttons then
+       offer View PDF / Download PDF / Live document. Set to "" to
+       link straight to the live document instead.
+     Set resumeUrl to "" to hide the resume buttons altogether.   */
   resumeUrl:
     "https://docs.google.com/document/d/1E4XQMZPFP5xhXg-Ajty2ks-39G84mv4m/edit?usp=sharing&ouid=103313520272293022509&rtpof=true&sd=true",
+  resumePdf: "resume.pdf",
 
   /* ---------- About ---------- */
   about: {

@@ -1,0 +1,4 @@
+# Built by the deploy (scripts/fetch-*.mjs), never committed
+/resume.pdf
+/assets/resume.json
+/assets/youtube.json

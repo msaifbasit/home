@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
   # Daily rebuild so the About > creator card always shows the channel's
-  # latest (or most-viewed) video — see creator.youtube.pick in config.js.
+  # latest (or most-viewed) video — see creator.youtube.pick in config.js —
+  # and resume.pdf is rebuilt from the live resume (scripts/fetch-resume.mjs).
   # GitHub only runs schedules from the repo's DEFAULT branch, so the
   # default branch must be main (Settings > General > Default branch).
   schedule:
@@ -47,6 +48,15 @@ jobs:
         run: node scripts/fetch-youtube.mjs
         env:
           YT_API_KEY: ${{ secrets.YT_API_KEY }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+      # Writes resume.pdf + assets/resume.json from the live resume in
+      # Google Drive (config.js → resumeUrl). Google's own PDF export
+      # first, LibreOffice as the fallback. Never fails the deploy: on
+      # any error the PDF already on the live site is kept.
+      - name: Build resume.pdf from the live resume
+        continue-on-error: true
+        run: node scripts/fetch-resume.mjs
+        env:
           SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v3
         with:

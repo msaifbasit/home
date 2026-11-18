@@ -7,9 +7,9 @@
 
 // ?v= is a cache-buster: bump it (here and in index.html) when you change these files
 // so returning visitors get the new version instead of a cached copy.
-import CONFIG from "../config.js?v=20261117b";
-import { initChat } from "./chatbot.js?v=20261117b";
-import { initCreator } from "./creator.js?v=20261117b";
+import CONFIG from "../config.js?v=20261118";
+import { initChat } from "./chatbot.js?v=20261118";
+import { initCreator } from "./creator.js?v=20261118";
 
 const $ = (sel) => document.querySelector(sel);
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -109,12 +109,15 @@ function render() {
   $("#about-img").src = identity.photo;
   $("#about-img").alt = `Portrait of ${fullName}`;
 
-  // Resume buttons (hidden when no URL is set)
+  // Resume buttons (hidden when no URL is set). The href stays the live
+  // doc so the link still works without JS; initResumeChooser upgrades
+  // the click to a PDF / live-doc chooser once the daily PDF exists.
   for (const id of ["#nav-resume", "#hero-resume"]) {
     const btn = $(id);
     if (CONFIG.resumeUrl) btn.href = CONFIG.resumeUrl;
     else btn.style.display = "none";
   }
+  if (CONFIG.resumeUrl) initResumeChooser(fullName);
 
   // About
   $("#about-heading").textContent = about.heading;
@@ -327,6 +330,67 @@ function initEmailChooser(email) {
       close();
     }, 900);
   });
+}
+
+/* ---------- Resume chooser ----------
+   The deploy turns the live resume into resume.pdf every day
+   (scripts/fetch-resume.mjs) and records when the document last
+   changed in assets/resume.json. If that file is there, the Resume
+   buttons open a chooser: view the PDF, download it, or open the live
+   document. If it isn't (e.g. before the first run), they simply go to
+   the live document as before. */
+async function initResumeChooser(fullName) {
+  if (!CONFIG.resumePdf) return;
+  let meta;
+  try {
+    const res = await fetch("assets/resume.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    meta = await res.json();
+  } catch { return; }
+
+  // ?v= makes returning visitors fetch the new PDF the day it changes
+  const pdf = `${CONFIG.resumePdf}?v=${encodeURIComponent(meta.hash || meta.updatedAt || "")}`;
+  const fileName = `${fullName.replace(/\s+/g, "-")}-Resume.pdf`;
+  const updated = meta.updatedAt
+    ? new Date(meta.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : "";
+
+  const modal = document.createElement("div");
+  modal.className = "email-modal resume-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-label", "Choose how to open the resume");
+  modal.innerHTML = `
+    <div class="email-card">
+      <button class="email-close" aria-label="Close">&#10005;</button>
+      <h3>Resume &#128196;</h3>
+      <p class="resume-updated mono">${updated ? `Last updated ${updated}` : "Always the latest version"}</p>
+      <div class="email-opts">
+        <a class="email-opt" href="${pdf}" target="_blank" rel="noopener">
+          <span class="opt-ic">&#128065;&#65039;</span>
+          <span class="opt-text">View PDF<small>Opens in a new tab</small></span>
+        </a>
+        <a class="email-opt" href="${pdf}" download="${fileName}">
+          <span class="opt-ic">&#11015;&#65039;</span>
+          <span class="opt-text">Download PDF<small>${fileName}</small></span>
+        </a>
+        <a class="email-opt" href="${CONFIG.resumeUrl}" target="_blank" rel="noopener">
+          <span class="opt-ic">&#128221;</span>
+          <span class="opt-text">Open live document<small>Google Docs (.docx)</small></span>
+        </a>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const open = () => modal.classList.add("open");
+  const close = () => modal.classList.remove("open");
+  for (const id of ["#nav-resume", "#hero-resume"]) {
+    $(id)?.addEventListener("click", (e) => { e.preventDefault(); open(); });
+  }
+  modal.querySelector(".email-close").addEventListener("click", close);
+  modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  modal.querySelectorAll("a.email-opt").forEach((a) => a.addEventListener("click", close));
 }
 
 /* ---------- Typing animation ----------
